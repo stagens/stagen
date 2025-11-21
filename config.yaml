@@ -5,3 +5,9 @@ logger:
   timestamp: true
   stacktrace: false
   stacktrace_errors: true
+
+stagen:
+  work_dir: ./example
+
+site:
+  name: My Stagen Website

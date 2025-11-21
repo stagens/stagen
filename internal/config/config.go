@@ -7,10 +7,14 @@ import (
 
 	coreConfig "github.com/pixality-inc/golang-core/config"
 	"github.com/pixality-inc/golang-core/logger"
+
+	"stagen/pkg/stagen"
 )
 
 type Config struct {
-	Logger logger.YamlConfig `env-prefix:"STAGEN_LOG_" yaml:"logger"`
+	Logger logger.YamlConfig     `env-prefix:"STAGEN_LOG_"  yaml:"logger"`
+	Stagen stagen.ConfigYaml     `env-prefix:"STAGEN_"      yaml:"stagen"`
+	Site   stagen.SiteConfigYaml `env-prefix:"STAGEN_SITE_" yaml:"site"`
 }
 
 func RootDir() string {
