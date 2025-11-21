@@ -1,0 +1,7 @@
+logger:
+  level: debug
+  format: text
+  colors: true
+  timestamp: true
+  stacktrace: false
+  stacktrace_errors: true
