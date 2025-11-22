@@ -1,0 +1,4 @@
+---
+layout: blog
+variables:
+  blog: true

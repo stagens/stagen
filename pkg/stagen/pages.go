@@ -30,7 +30,7 @@ func (s *Impl) loadPages(ctx context.Context) error {
 
 	pagesDir := s.pagesDir()
 
-	tree, err := filetree.Tree(ctx, pagesDir, 1)
+	tree, err := filetree.Tree(ctx, pagesDir, filetree.NoMaxLevel)
 	if err != nil {
 		return fmt.Errorf("failed to build tree for pages dir: %w", err)
 	}
@@ -209,8 +209,11 @@ func (s *Impl) readDirConfig(ctx context.Context, filename string) (DirConfig, e
 		return nil, fmt.Errorf("failed to read dir config file %s: %w", filename, err)
 	}
 
-	fmt.Println("Dir config", len(configContent), "bytes")
+	var dirConfigYaml *DirConfigYaml
 
-	// @todo
-	return nil, nil
+	if err = yaml.Unmarshal(configContent, &dirConfigYaml); err != nil {
+		return nil, fmt.Errorf("failed to parse dir config file %s: %w", filename, err)
+	}
+
+	return dirConfigYaml, nil
 }
