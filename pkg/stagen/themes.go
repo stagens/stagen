@@ -132,7 +132,7 @@ func (s *Impl) addTheme(
 	layoutsIncludePaths = append(layoutsIncludePaths, filepath.Join(themeDir, "layouts"))
 	includePaths = append(includePaths, filepath.Join(themeDir, "includes"))
 
-	s.themes[themeId] = NewTheme(themeId, themeConfig, layoutsIncludePaths, includePaths)
+	s.themes[themeId] = NewTheme(themeId, themeDir, themeConfig, layoutsIncludePaths, includePaths)
 
 	return nil
 }

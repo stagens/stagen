@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"stagen/internal/config"
+	"stagen/pkg/stagen"
 
 	"github.com/pixality-inc/golang-core/base_env"
 	"github.com/pixality-inc/golang-core/control_flow"
@@ -16,6 +17,7 @@ type Wiring struct {
 	ControlFlow control_flow.ControlFlow
 	Config      *config.Config
 	Log         logger.Logger
+	Stagen      stagen.Stagen
 }
 
 func New() *Wiring {
@@ -29,10 +31,20 @@ func New() *Wiring {
 
 	log := baseEnv.Logger()
 
+	// Stagen
+
+	stagenEngine := stagen.New(
+		&cfg.Stagen,
+		&cfg.Site,
+	)
+
+	// Wire
+
 	return &Wiring{
 		ControlFlow: controlFlow,
 		Config:      cfg,
 		Log:         log,
+		Stagen:      stagenEngine,
 	}
 }
 

@@ -24,6 +24,36 @@ func Tree(ctx context.Context, dir string, maxLevels int) (Entry, error) {
 	return entry, nil
 }
 
+func Visit(_ context.Context, rootEntry Entry, visitor func(entry Entry) error) error {
+	var visitEntries func(entries []Entry) error
+
+	visitEntry := func(entry Entry) error {
+		if err := visitor(entry); err != nil {
+			return fmt.Errorf("failed to visit '%s': %w", filepath.Join(entry.Path(), entry.Name()), err)
+		}
+
+		children := entry.Children()
+
+		if len(children) > 0 {
+			return visitEntries(children)
+		}
+
+		return nil
+	}
+
+	visitEntries = func(entries []Entry) error {
+		for _, entry := range entries {
+			if err := visitEntry(entry); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	return visitEntry(rootEntry)
+}
+
 func getDirEntries(ctx context.Context, dir string, level int, maxLevels int) ([]Entry, error) {
 	if maxLevels != NoMaxLevel && level+1 > maxLevels {
 		return nil, nil

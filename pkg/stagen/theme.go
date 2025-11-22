@@ -10,6 +10,8 @@ import (
 type Theme interface {
 	Name() string
 
+	Path() string
+
 	Config() ThemeConfig
 
 	Render(
@@ -22,12 +24,14 @@ type Theme interface {
 
 type ThemeImpl struct {
 	name   string
+	path   string
 	config ThemeConfig
 	loader template_engine.Loader
 }
 
 func NewTheme(
 	name string,
+	path string,
 	config ThemeConfig,
 	layoutsIncludePaths []string,
 	includePaths []string,
@@ -44,6 +48,7 @@ func NewTheme(
 
 	return &ThemeImpl{
 		name:   name,
+		path:   path,
 		config: config,
 		loader: templateLoader,
 	}
@@ -51,6 +56,10 @@ func NewTheme(
 
 func (t *ThemeImpl) Name() string {
 	return t.name
+}
+
+func (t *ThemeImpl) Path() string {
+	return t.path
 }
 
 func (t *ThemeImpl) Config() ThemeConfig {

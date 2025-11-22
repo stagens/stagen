@@ -253,6 +253,7 @@ func (s *Impl) saveBuildPage(
 		s.createdDirs[dir] = struct{}{}
 	}
 
+	//nolint:gosec
 	if err := os.WriteFile(saveFilename, content, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to save file '%s': %w", saveFilename, err)
 	}
