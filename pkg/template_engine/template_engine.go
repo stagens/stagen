@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"text/template"
+	textTemplate "text/template"
 
 	"github.com/pixality-inc/golang-core/logger"
 )
@@ -25,8 +25,8 @@ type Impl struct {
 	log                    logger.Loggable
 	name                   string
 	loader                 Loader
-	extraTemplateFunctions template.FuncMap
-	template               *template.Template
+	extraTemplateFunctions textTemplate.FuncMap
+	template               Template
 	context                context.Context // nolint:containedctx
 	initialized            bool
 	mutex                  sync.Mutex
@@ -34,16 +34,31 @@ type Impl struct {
 
 func New(
 	name string,
+	format TemplateFormat,
 	loader Loader,
 ) *Impl {
-	return NewWithExtraTemplateFunctions(name, loader, make(template.FuncMap))
+	return NewWithExtraTemplateFunctions(name, format, loader, make(textTemplate.FuncMap))
 }
 
 func NewWithExtraTemplateFunctions(
 	name string,
+	format TemplateFormat,
 	loader Loader,
-	extraTemplateFunctions template.FuncMap,
+	extraTemplateFunctions textTemplate.FuncMap,
 ) *Impl {
+	var template Template
+
+	switch format {
+	case TemplateFormatText:
+		template = NewTextTemplate(name)
+
+	case TemplateFormatHtml:
+		template = NewHtmlTemplate(name)
+
+	default:
+		panic(fmt.Errorf("%w: %s", ErrUnknownTemplateFormat, format))
+	}
+
 	return &Impl{
 		log: logger.NewLoggableImplWithServiceAndFields(
 			"template_engine",
@@ -54,7 +69,7 @@ func NewWithExtraTemplateFunctions(
 		name:                   name,
 		loader:                 loader,
 		extraTemplateFunctions: extraTemplateFunctions,
-		template:               template.New(name),
+		template:               template,
 		context:                nil,
 		initialized:            false,
 		mutex:                  sync.Mutex{},
@@ -71,8 +86,7 @@ func (e *Impl) HasBlocks(ctx context.Context, content string) (bool, error) {
 		return false, fmt.Errorf("clone template: %w", err)
 	}
 
-	_, err = tmpl.Parse(content)
-	if err != nil {
+	if err = tmpl.Parse(content); err != nil {
 		return false, fmt.Errorf("parse template content: %w", err)
 	}
 
@@ -99,7 +113,7 @@ func (e *Impl) Execute(ctx context.Context, layout string, content string, data 
 		}
 	}
 
-	if _, err := tmpl.Parse(content); err != nil {
+	if err := tmpl.Parse(content); err != nil {
 		return nil, fmt.Errorf("parse template: %w", err)
 	}
 
@@ -129,11 +143,8 @@ func (e *Impl) init(ctx context.Context) error {
 
 	e.context = ctx
 
-	e.template.Funcs(template.FuncMap{
+	e.template.Funcs(textTemplate.FuncMap{
 		"dict": e.dict,
-		"extends": func(path string) (string, error) {
-			return e.includeTemplate(LoadTypeExtends, path)
-		},
 		"include": func(path string) (string, error) {
 			return e.includeTemplate(LoadTypeInclude, path)
 		},
@@ -175,7 +186,7 @@ func (e *Impl) includeTemplate(loadType LoadType, path string) (string, error) {
 		return "", fmt.Errorf("include template type %s '%s': %w", loadType, path, err)
 	}
 
-	if _, err = e.template.Parse(content); err != nil {
+	if err = e.template.Parse(content); err != nil {
 		return "", fmt.Errorf("parse template type %s '%s': %w", loadType, path, err)
 	}
 

@@ -1,6 +1,10 @@
 package stagen
 
-import "github.com/pixality-inc/golang-core/json"
+import (
+	"github.com/pixality-inc/golang-core/json"
+
+	"stagen/pkg/util"
+)
 
 type SiteConfigAuthorYaml struct {
 	NameValue    string `env:"NAME"    yaml:"name"`
@@ -80,11 +84,11 @@ func (c *SiteConfigTemplateYaml) Variables() map[string]any {
 }
 
 func (c *SiteConfigTemplateYaml) Includes() map[string][]SiteConfigTemplateInclude {
-	return MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
 }
 
 func (c *SiteConfigTemplateYaml) Extras() map[string][]SiteConfigTemplateExtra {
-	return MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
 }
 
 type SiteExtensionConfigYaml struct {
@@ -124,16 +128,44 @@ func (c *DatabaseConfigYaml) Data() []json.Object {
 	return c.DataValue
 }
 
+type ThemeConfigAuthorYaml struct {
+	NameValue    string `yaml:"name"`
+	EmailValue   string `yaml:"email"`
+	WebsiteValue string `yaml:"website"`
+}
+
+func (c *ThemeConfigAuthorYaml) Name() string {
+	return c.NameValue
+}
+
+func (c *ThemeConfigAuthorYaml) Email() string {
+	return c.EmailValue
+}
+
+func (c *ThemeConfigAuthorYaml) Website() string {
+	return c.WebsiteValue
+}
+
 type ThemeConfigYaml struct {
-	LayoutValue        string                                      `env:"LAYOUT"         env-default:"default" yaml:"layout"`
-	DefaultLayoutValue string                                      `env:"DEFAULT_LAYOUT" env-default:"default" yaml:"default_layout"`
+	NameValue          string                                      `yaml:"name"`
+	TitleValue         string                                      `yaml:"title"`
+	AuthorValue        ThemeConfigAuthorYaml                       `yaml:"author"`
+	DefaultLayoutValue string                                      `yaml:"default_layout"`
 	VariablesValue     map[string]any                              `yaml:"variables"`
 	IncludesValue      map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue        map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
 }
 
-func (c *ThemeConfigYaml) Layout() string {
-	return c.LayoutValue
+func (c *ThemeConfigYaml) Name() string {
+	return c.NameValue
+}
+
+func (c *ThemeConfigYaml) Title() string {
+	return c.TitleValue
+}
+
+func (c *ThemeConfigYaml) Author() ThemeAuthor {
+	return &c.AuthorValue
 }
 
 func (c *ThemeConfigYaml) DefaultLayout() string {
@@ -145,11 +177,11 @@ func (c *ThemeConfigYaml) Variables() map[string]any {
 }
 
 func (c *ThemeConfigYaml) Includes() map[string][]SiteConfigTemplateInclude {
-	return MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
 }
 
 func (c *ThemeConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
-	return MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
 }
 
 type ConfigYaml struct {
@@ -198,13 +230,13 @@ func (c *ConfigYaml) TemplatesDir() string {
 type SiteConfigYaml struct {
 	BaseUrlValue    string                     `env:"BASE_URL"         env-default:"http://127.0.0.1:8080" yaml:"base_url"`
 	NameValue       string                     `env:"NAME"             env-default:"My Cool Website"       yaml:"name"`
-	AuthorValue     *SiteConfigAuthorYaml      `env-prefix:"AUTHOR"    yaml:"author"`
-	LogoValue       *SiteConfigLogoYaml        `env-prefix:"LOGO"      yaml:"logo"`
-	CopyrightValue  *SiteConfigCopyrightYaml   `env-prefix:"COPYRIGHT" yaml:"copyright"`
+	AuthorValue     SiteConfigAuthorYaml       `env-prefix:"AUTHOR"    yaml:"author"`
+	LogoValue       SiteConfigLogoYaml         `env-prefix:"LOGO"      yaml:"logo"`
+	CopyrightValue  SiteConfigCopyrightYaml    `env-prefix:"COPYRIGHT" yaml:"copyright"`
 	ExtensionsValue []*SiteExtensionConfigYaml `yaml:"extensions"`
 	AggDictsValue   []*SiteAggDictConfigYaml   `yaml:"agg_dicts"`
 	GeneratorsValue []*SiteGeneratorConfigYaml `yaml:"generators"`
-	TemplateValue   *SiteConfigTemplateYaml    `env-prefix:"TEMPLATE"  yaml:"template"`
+	TemplateValue   SiteConfigTemplateYaml     `env-prefix:"TEMPLATE"  yaml:"template"`
 }
 
 func (c *SiteConfigYaml) BaseUrl() string {
@@ -216,31 +248,31 @@ func (c *SiteConfigYaml) Name() string {
 }
 
 func (c *SiteConfigYaml) Author() SiteConfigAuthor {
-	return c.AuthorValue
+	return &c.AuthorValue
 }
 
 func (c *SiteConfigYaml) Logo() SiteConfigLogo {
-	return c.LogoValue
+	return &c.LogoValue
 }
 
 func (c *SiteConfigYaml) Copyright() SiteConfigCopyright {
-	return c.CopyrightValue
+	return &c.CopyrightValue
 }
 
 func (c *SiteConfigYaml) Extensions() []SiteExtensionConfig {
-	return SliceOfRefsToInterfaces[SiteExtensionConfigYaml, SiteExtensionConfig](c.ExtensionsValue)
+	return util.SliceOfRefsToInterfaces[SiteExtensionConfigYaml, SiteExtensionConfig](c.ExtensionsValue)
 }
 
 func (c *SiteConfigYaml) AggDicts() []SiteAggDictConfig {
-	return SliceOfRefsToInterfaces[SiteAggDictConfigYaml, SiteAggDictConfig](c.AggDictsValue)
+	return util.SliceOfRefsToInterfaces[SiteAggDictConfigYaml, SiteAggDictConfig](c.AggDictsValue)
 }
 
 func (c *SiteConfigYaml) Generators() []SiteGeneratorConfig {
-	return SliceOfRefsToInterfaces[SiteGeneratorConfigYaml, SiteGeneratorConfig](c.GeneratorsValue)
+	return util.SliceOfRefsToInterfaces[SiteGeneratorConfigYaml, SiteGeneratorConfig](c.GeneratorsValue)
 }
 
 func (c *SiteConfigYaml) Template() SiteConfigTemplate {
-	return c.TemplateValue
+	return &c.TemplateValue
 }
 
 type DirConfigYaml struct {
@@ -264,17 +296,19 @@ func (c *DirConfigYaml) Variables() map[string]any {
 }
 
 func (c *DirConfigYaml) Includes() map[string][]SiteConfigTemplateInclude {
-	return MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
 }
 
 func (c *DirConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
-	return MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
 }
 
 type PageConfigYaml struct {
 	ThemeValue    string                                      `yaml:"layout"`
 	LayoutValue   string                                      `yaml:"layout"`
 	TitleValue    string                                      `yaml:"title"`
+	IsHiddenValue bool                                        `yaml:"is_hidden"`
+	IsDraftValue  bool                                        `yaml:"is_draft_value"`
 	IncludesValue map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue   map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
 }
@@ -291,46 +325,18 @@ func (c *PageConfigYaml) Title() string {
 	return c.TitleValue
 }
 
+func (c *PageConfigYaml) IsHidden() bool {
+	return c.IsHiddenValue
+}
+
+func (c *PageConfigYaml) IsDraft() bool {
+	return c.IsDraftValue
+}
+
 func (c *PageConfigYaml) Includes() map[string][]SiteConfigTemplateInclude {
-	return MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
 }
 
 func (c *PageConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
-	return MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
-}
-
-func MapOfRefsToInterfaces[K comparable, T any, I any](value map[K]*T) map[K]I {
-	newMap := make(map[K]I, len(value))
-
-	for key, ref := range value {
-		newMap[key] = RefToInterface[T, I](ref)
-	}
-
-	return newMap
-}
-
-func MapOfSlicesOfRefsToInterfaces[K comparable, T any, I any](value map[K][]*T) map[K][]I {
-	newMap := make(map[K][]I, len(value))
-
-	for key, refs := range value {
-		newMap[key] = SliceOfRefsToInterfaces[T, I](refs)
-	}
-
-	return newMap
-}
-
-func SliceOfRefsToInterfaces[T any, I any](value []*T) []I {
-	result := make([]I, len(value))
-
-	for i, v := range value {
-		result[i] = RefToInterface[T, I](v)
-	}
-
-	return result
-}
-
-func RefToInterface[T any, I any](ref *T) I {
-	var vAny any = ref
-
-	return vAny.(I) //nolint:forcetypeassert,errcheck // @todo
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
 }

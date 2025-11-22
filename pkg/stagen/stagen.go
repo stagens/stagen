@@ -39,7 +39,9 @@ type Impl struct {
 	config      Config
 	siteConfig  SiteConfig
 	initialized bool
-	pages       []Page
+	extensions  map[string]Extension
+	pages       map[string]Page
+	themes      map[string]Theme
 	mutex       sync.Mutex
 }
 
@@ -52,7 +54,9 @@ func New(
 		config:      config,
 		siteConfig:  siteConfig,
 		initialized: false,
-		pages:       make([]Page, 0),
+		extensions:  make(map[string]Extension),
+		pages:       make(map[string]Page),
+		themes:      make(map[string]Theme),
 		mutex:       sync.Mutex{},
 	}
 }

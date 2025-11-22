@@ -3,6 +3,7 @@ package stagen
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,8 @@ import (
 
 	"stagen/pkg/filetree"
 )
+
+var ErrPageAlreadyExists = errors.New("page already exists")
 
 func (s *Impl) pagesDir() string {
 	dir := s.config.PagesDir()
@@ -55,40 +58,36 @@ func (s *Impl) loadPage(
 
 	log.Infof("Loading page %s...", pageFilename)
 
-	pageDir := filepath.Dir(pageFilename)
-	pageDirWithoutWorkDir := strings.TrimPrefix(pageDir, s.workDir())
-	pageFilenameWithoutExt, fullExt := removeFileExtension(pageFilename)
-	fileExt := strings.TrimPrefix(pageFilename, pageFilenameWithoutExt)
-	templateExt := filepath.Ext(fullExt)
-
-	if !strings.HasPrefix(fileExt, templateExt) {
-		fileExt = strings.TrimSuffix(fileExt, templateExt)
-	} else {
-		templateExt = ""
-	}
-
-	isTemplate := templateExtensionRegexp.MatchString(templateExt)
-
-	pageFileInfo := PageFileInfo{
-		Filename:                 pageFilename,
-		BaseFilename:             filepath.Base(pageFilename),
-		Path:                     pageDir,
-		PathWithoutWorkDir:       pageDirWithoutWorkDir,
-		FilenameWithoutExtension: pageFilenameWithoutExt,
-		FullExtension:            fullExt,
-		FileExtension:            fileExt,
-		TemplateExtension:        templateExt,
-		IsTemplate:               isTemplate,
-	}
+	pageFileInfo := s.getPageFileInfo(pageFilename)
 
 	fileContent, err := s.readFile(ctx, pageFilename)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	var pageConfigYamlNode *yaml.Node
+	err = s.addPage(
+		pageFileInfo,
+		fileContent,
+		dirConfigs,
+	)
+	if err != nil {
+		return err
+	}
 
-	fileContent, err = frontmatter.Parse(bytes.NewReader(fileContent), &pageConfigYamlNode)
+	return nil
+}
+
+func (s *Impl) addPage(
+	pageFileInfo PageFileInfo,
+	content []byte,
+	dirConfigs []DirConfig,
+) error {
+	var (
+		err                error
+		pageConfigYamlNode *yaml.Node
+	)
+
+	content, err = frontmatter.Parse(bytes.NewReader(content), &pageConfigYamlNode)
 	if err != nil {
 		return fmt.Errorf("failed to parse file front matter: %w", err)
 	}
@@ -119,18 +118,71 @@ func (s *Impl) loadPage(
 		pageConfig = pageConfigYaml
 	}
 
+	pageName := filepath.Join(pageFileInfo.PathWithoutWorkDirAndPagesDir, pageFileInfo.FilenameWithoutExtension)
+
+	pageId := pageName
+	if pageId == "index" {
+		pageId = ""
+	}
+
+	pageUri := "/" + pageId
+
 	page := NewPage(
-		pageFileInfo.PathWithoutWorkDir,
+		pageId,
+		pageName,
+		pageUri,
 		&pageFileInfo,
-		fileContent,
+		content,
 		pageVariables,
 		dirConfigs,
 		pageConfig,
 	)
 
-	s.pages = append(s.pages, page)
+	if _, ok := s.pages[pageId]; ok {
+		return fmt.Errorf("%w: %s", ErrPageAlreadyExists, pageId)
+	}
+
+	s.pages[pageId] = page
 
 	return nil
+}
+
+func (s *Impl) getPageFileInfo(pageFilename string) PageFileInfo {
+	workDir, _ := strings.CutPrefix(s.workDir(), "./")
+	pagesDir, _ := strings.CutPrefix(s.pagesDir(), "./")
+
+	pageDir := filepath.Dir(pageFilename)
+	pageDirWithoutWorkDir := strings.TrimPrefix(pageDir, workDir+"/")
+	pageFilenameWithoutExt, fullExt := removeFileExtension(pageFilename)
+	pageFilenameWithoutExt = filepath.Base(pageFilenameWithoutExt)
+
+	fileExt := strings.TrimPrefix(pageFilename, pageFilenameWithoutExt)
+	templateExt := filepath.Ext(fullExt)
+	pageDirWithoutWorkDirAndPagesDir, _ := strings.CutPrefix(pageDir, pagesDir+"/")
+	pageDirWithoutWorkDirAndPagesDir, _ = strings.CutPrefix(pageDirWithoutWorkDirAndPagesDir, pagesDir)
+
+	if !strings.HasPrefix(fileExt, templateExt) {
+		fileExt = strings.TrimSuffix(fileExt, templateExt)
+	} else {
+		templateExt = ""
+	}
+
+	isTemplate := templateExtensionRegexp.MatchString(templateExt)
+
+	pageFileInfo := PageFileInfo{
+		Filename:                      pageFilename,
+		BaseFilename:                  filepath.Base(pageFilename),
+		Path:                          pageDir,
+		PathWithoutWorkDir:            pageDirWithoutWorkDir,
+		PathWithoutWorkDirAndPagesDir: pageDirWithoutWorkDirAndPagesDir,
+		FilenameWithoutExtension:      pageFilenameWithoutExt,
+		FullExtension:                 fullExt,
+		FileExtension:                 fileExt,
+		TemplateExtension:             templateExt,
+		IsTemplate:                    isTemplate,
+	}
+
+	return pageFileInfo
 }
 
 func (s *Impl) processPagesDirEntry(ctx context.Context, dirEntry filetree.Entry, dirConfigs []DirConfig) error {

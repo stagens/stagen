@@ -55,12 +55,20 @@ type DatabaseConfig interface {
 	Data() []json.Object
 }
 
+type ThemeAuthor interface {
+	Name() string
+	Email() string
+	Website() string
+}
+
 type ThemeConfig interface {
-	Layout() string
+	Name() string
+	Title() string
+	Author() ThemeAuthor
 	DefaultLayout() string
 	Variables() map[string]any
 	Includes() map[string][]SiteConfigTemplateInclude
-	Extras() map[string][]*SiteConfigTemplateExtra
+	Extras() map[string][]SiteConfigTemplateExtra
 }
 
 type DirConfig interface {
@@ -75,6 +83,8 @@ type PageConfig interface {
 	Theme() string
 	Layout() string
 	Title() string
+	IsHidden() bool
+	IsDraft() bool
 	Includes() map[string][]SiteConfigTemplateInclude
 	Extras() map[string][]SiteConfigTemplateExtra
 }
@@ -118,6 +128,8 @@ type PageConfigImpl struct {
 	theme    string
 	layout   string
 	title    string
+	isHidden bool
+	isDraft  bool
 	includes map[string][]SiteConfigTemplateInclude
 	extras   map[string][]SiteConfigTemplateExtra
 }
@@ -127,6 +139,8 @@ func NewPageConfigImpl() *PageConfigImpl {
 		theme:    "",
 		layout:   "",
 		title:    "",
+		isHidden: false,
+		isDraft:  false,
 		includes: make(map[string][]SiteConfigTemplateInclude),
 		extras:   make(map[string][]SiteConfigTemplateExtra),
 	}
@@ -142,6 +156,14 @@ func (p *PageConfigImpl) Layout() string {
 
 func (p *PageConfigImpl) Title() string {
 	return p.title
+}
+
+func (p *PageConfigImpl) IsHidden() bool {
+	return p.isHidden
+}
+
+func (p *PageConfigImpl) IsDraft() bool {
+	return p.isDraft
 }
 
 func (p *PageConfigImpl) Includes() map[string][]SiteConfigTemplateInclude {

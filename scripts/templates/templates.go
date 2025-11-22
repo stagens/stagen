@@ -87,7 +87,7 @@ func main() {
 		},
 	})
 
-	templateEngine := template_engine.New("default", myTemplateLoader)
+	templateEngine := template_engine.New("default", template_engine.TemplateFormatText, myTemplateLoader)
 
 	templateContent := "My Template"
 
