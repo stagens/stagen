@@ -1,4 +1,6 @@
 ---
-layout: blog
+#layout: _blog
 variables:
   blog: true
+  a: 100
+  b: hello

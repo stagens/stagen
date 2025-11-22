@@ -1,0 +1,12 @@
+{{- define "_default" -}}
+  <!DOCTYPE>
+  <html lang="en">
+  <head>
+    <title>{{ .Page.Title }}</title>
+  </head>
+  <body>
+Page created at {{.Page.CreatedAt}}, changed at {{.Page.ChangedAt}}
+{{ render "page_content" }}
+  </body>
+  </html>
+{{- end -}}

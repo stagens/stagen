@@ -1,5 +1,10 @@
 package stagen
 
+import (
+	"sync"
+	"time"
+)
+
 type PageFileInfo struct {
 	Filename                      string
 	BaseFilename                  string
@@ -11,6 +16,10 @@ type PageFileInfo struct {
 	FileExtension                 string
 	TemplateExtension             string
 	IsTemplate                    bool
+	CreatedAt                     time.Time
+	ModifiedAt                    time.Time
+	AccessedAt                    time.Time
+	ChangedAt                     time.Time
 }
 
 type Page interface {
@@ -18,22 +27,20 @@ type Page interface {
 	Name() string
 	Uri() string
 	FileInfo() *PageFileInfo
-	Title() string
-	Theme() string
-	Layout() string
-	IsHidden() bool
-	IsDraft() bool
+	Config() PageConfig
+	Content() []byte
 }
 
 type PageImpl struct {
-	id         string
-	name       string
-	uri        string
-	fileInfo   *PageFileInfo
-	content    []byte
-	variables  map[string]any
-	dirConfigs []DirConfig
-	config     PageConfig
+	id           string
+	name         string
+	uri          string
+	fileInfo     *PageFileInfo
+	content      []byte
+	dirConfigs   []DirConfig
+	config       PageConfig
+	mergedConfig PageConfig
+	mutex        sync.Mutex
 }
 
 func NewPage(
@@ -42,19 +49,19 @@ func NewPage(
 	uri string,
 	fileInfo *PageFileInfo,
 	content []byte,
-	variables map[string]any,
 	dirConfigs []DirConfig,
 	config PageConfig,
 ) *PageImpl {
 	return &PageImpl{
-		id:         id,
-		name:       name,
-		uri:        uri,
-		fileInfo:   fileInfo,
-		content:    content,
-		variables:  variables,
-		dirConfigs: dirConfigs,
-		config:     config,
+		id:           id,
+		name:         name,
+		uri:          uri,
+		fileInfo:     fileInfo,
+		content:      content,
+		dirConfigs:   dirConfigs,
+		config:       config,
+		mergedConfig: nil,
+		mutex:        sync.Mutex{},
 	}
 }
 
@@ -74,22 +81,27 @@ func (p *PageImpl) FileInfo() *PageFileInfo {
 	return p.fileInfo
 }
 
-func (p *PageImpl) Title() string {
-	return p.config.Title()
+func (p *PageImpl) Config() PageConfig {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	if p.mergedConfig != nil {
+		return p.mergedConfig
+	}
+
+	var pageConfig PageConfig = NewDefaultPageConfig(nil)
+
+	for _, dirConfig := range p.dirConfigs {
+		pageConfig = MergePageConfigs(pageConfig, dirConfig)
+	}
+
+	pageConfig = MergePageConfigs(pageConfig, p.config)
+
+	p.mergedConfig = pageConfig
+
+	return p.mergedConfig
 }
 
-func (p *PageImpl) Theme() string {
-	return p.config.Theme()
-}
-
-func (p *PageImpl) Layout() string {
-	return p.config.Layout()
-}
-
-func (p *PageImpl) IsHidden() bool {
-	return p.config.IsHidden()
-}
-
-func (p *PageImpl) IsDraft() bool {
-	return p.config.IsDraft()
+func (p *PageImpl) Content() []byte {
+	return p.content
 }

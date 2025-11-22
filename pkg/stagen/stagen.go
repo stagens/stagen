@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sync"
+	"time"
 
 	"github.com/pixality-inc/golang-core/logger"
 )
@@ -35,14 +36,19 @@ type Stagen interface {
 }
 
 type Impl struct {
-	log         logger.Loggable
-	config      Config
-	siteConfig  SiteConfig
-	initialized bool
-	extensions  map[string]Extension
-	pages       map[string]Page
-	themes      map[string]Theme
-	mutex       sync.Mutex
+	log          logger.Loggable
+	config       Config
+	siteConfig   SiteConfig
+	buildTime    time.Time
+	initialized  bool
+	extensions   map[string]Extension
+	databases    map[string]Database
+	aggDicts     map[string]any            // @todo
+	aggDictsData map[string]map[string]any // @todo
+	pages        map[string]Page
+	themes       map[string]Theme
+	createdDirs  map[string]struct{}
+	mutex        sync.Mutex
 }
 
 func New(
@@ -50,14 +56,19 @@ func New(
 	siteConfig SiteConfig,
 ) *Impl {
 	return &Impl{
-		log:         logger.NewLoggableImplWithService("stagen"),
-		config:      config,
-		siteConfig:  siteConfig,
-		initialized: false,
-		extensions:  make(map[string]Extension),
-		pages:       make(map[string]Page),
-		themes:      make(map[string]Theme),
-		mutex:       sync.Mutex{},
+		log:          logger.NewLoggableImplWithService("stagen"),
+		config:       config,
+		siteConfig:   siteConfig,
+		buildTime:    time.Now(),
+		initialized:  false,
+		extensions:   make(map[string]Extension),
+		databases:    make(map[string]Database),
+		aggDicts:     make(map[string]any),
+		aggDictsData: make(map[string]map[string]any),
+		pages:        make(map[string]Page),
+		themes:       make(map[string]Theme),
+		createdDirs:  make(map[string]struct{}),
+		mutex:        sync.Mutex{},
 	}
 }
 

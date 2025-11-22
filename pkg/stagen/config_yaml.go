@@ -59,9 +59,8 @@ type SiteConfigTemplateExtraYaml struct {
 }
 
 type SiteConfigTemplateYaml struct {
-	ThemeValue         string                                      `env:"THEME"          env-default:"default" yaml:"theme"`
-	LayoutValue        string                                      `env:"LAYOUT"         env-default:"default" yaml:"layout"`
-	DefaultLayoutValue string                                      `env:"DEFAULT_LAYOUT" env-default:"default" yaml:"default_layout"`
+	ThemeValue         string                                      `env:"THEME"          env-default:"default"  yaml:"theme"`
+	DefaultLayoutValue string                                      `env:"DEFAULT_LAYOUT" env-default:"_default" yaml:"default_layout"`
 	VariablesValue     map[string]any                              `yaml:"variables"`
 	IncludesValue      map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue        map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
@@ -69,10 +68,6 @@ type SiteConfigTemplateYaml struct {
 
 func (c *SiteConfigTemplateYaml) Theme() string {
 	return c.ThemeValue
-}
-
-func (c *SiteConfigTemplateYaml) Layout() string {
-	return c.LayoutValue
 }
 
 func (c *SiteConfigTemplateYaml) DefaultLayout() string {
@@ -184,6 +179,19 @@ func (c *ThemeConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
 	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
 }
 
+func (c *ThemeConfigYaml) ToPageConfig() PageConfig {
+	return NewPageConfig(
+		c.Name(),
+		c.DefaultLayout(),
+		"",
+		false,
+		false,
+		c.Variables(),
+		c.Includes(),
+		c.Extras(),
+	)
+}
+
 type ConfigYaml struct {
 	EnvValue           string `env:"ENV"            env-default:"dev" yaml:"env"`
 	WorkDirValue       string `env:"WORK_DIR"       env-default:"."   yaml:"work_dir"`
@@ -193,6 +201,7 @@ type ConfigYaml struct {
 	ThemesDirValue     string `env:"THEMES_DIR"     env-default:""    yaml:"themes_dir"`
 	TemplatesDirValue  string `env:"TEMPLATES_DIR"  env-default:""    yaml:"templates_dir"`
 	PagesDirValue      string `env:"PAGES_DIR"      env-default:""    yaml:"pages_dir"`
+	PublicDirValue     string `env:"PUBLIC_DIR"     env-default:""    yaml:"public_dir"`
 }
 
 func (c *ConfigYaml) Env() string {
@@ -221,6 +230,10 @@ func (c *ConfigYaml) ThemesDir() string {
 
 func (c *ConfigYaml) PagesDir() string {
 	return c.PagesDirValue
+}
+
+func (c *ConfigYaml) PublicDir() string {
+	return c.PublicDirValue
 }
 
 func (c *ConfigYaml) TemplatesDir() string {
@@ -276,19 +289,34 @@ func (c *SiteConfigYaml) Template() SiteConfigTemplate {
 }
 
 type DirConfigYaml struct {
-	TitleValue     string                                      `yaml:"title"`
+	ThemeValue     string                                      `yaml:"theme"`
 	LayoutValue    string                                      `yaml:"layout"`
+	TitleValue     string                                      `yaml:"title"`
+	IsHiddenValue  bool                                        `yaml:"is_hidden"`
+	isDraftValue   bool                                        `yaml:"is_draft"`
 	VariablesValue map[string]any                              `yaml:"variables"`
 	IncludesValue  map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue    map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
+}
+
+func (c *DirConfigYaml) Theme() string {
+	return c.ThemeValue
+}
+
+func (c *DirConfigYaml) Layout() string {
+	return c.LayoutValue
 }
 
 func (c *DirConfigYaml) Title() string {
 	return c.TitleValue
 }
 
-func (c *DirConfigYaml) Layout() string {
-	return c.LayoutValue
+func (c *DirConfigYaml) IsHidden() bool {
+	return c.IsHiddenValue
+}
+
+func (c *DirConfigYaml) IsDraft() bool {
+	return c.isDraftValue
 }
 
 func (c *DirConfigYaml) Variables() map[string]any {
@@ -304,7 +332,7 @@ func (c *DirConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
 }
 
 type PageConfigYaml struct {
-	ThemeValue    string                                      `yaml:"layout"`
+	ThemeValue    string                                      `yaml:"theme"`
 	LayoutValue   string                                      `yaml:"layout"`
 	TitleValue    string                                      `yaml:"title"`
 	IsHiddenValue bool                                        `yaml:"is_hidden"`
@@ -313,30 +341,17 @@ type PageConfigYaml struct {
 	ExtrasValue   map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
 }
 
-func (c *PageConfigYaml) Theme() string {
-	return c.ThemeValue
-}
+func (c *PageConfigYaml) ToPageConfig(variables map[string]any) PageConfig {
+	pageConfig := NewPageConfig(
+		c.ThemeValue,
+		c.LayoutValue,
+		c.TitleValue,
+		c.IsHiddenValue,
+		c.IsDraftValue,
+		variables,
+		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue),
+		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue),
+	)
 
-func (c *PageConfigYaml) Layout() string {
-	return c.LayoutValue
-}
-
-func (c *PageConfigYaml) Title() string {
-	return c.TitleValue
-}
-
-func (c *PageConfigYaml) IsHidden() bool {
-	return c.IsHiddenValue
-}
-
-func (c *PageConfigYaml) IsDraft() bool {
-	return c.IsDraftValue
-}
-
-func (c *PageConfigYaml) Includes() map[string][]SiteConfigTemplateInclude {
-	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
-}
-
-func (c *PageConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
-	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
+	return pageConfig
 }

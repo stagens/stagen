@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/adrg/frontmatter"
+	"github.com/djherbis/times"
 	"github.com/pixality-inc/golang-core/util"
 	"gopkg.in/yaml.v3"
 
@@ -56,13 +57,16 @@ func (s *Impl) loadPage(
 
 	log := s.log.GetLogger(ctx)
 
-	log.Infof("Loading page %s...", pageFilename)
+	log.Infof("Loading page '%s'...", pageFilename)
 
-	pageFileInfo := s.getPageFileInfo(pageFilename)
+	pageFileInfo, err := s.getPageFileInfo(pageFilename)
+	if err != nil {
+		return fmt.Errorf("failed to get page '%s' file info: %w", pageFilename, err)
+	}
 
 	fileContent, err := s.readFile(ctx, pageFilename)
 	if err != nil {
-		return fmt.Errorf("failed to read file: %w", err)
+		return fmt.Errorf("failed to read file '%s': %w", pageFilename, err)
 	}
 
 	err = s.addPage(
@@ -78,34 +82,28 @@ func (s *Impl) loadPage(
 }
 
 func (s *Impl) addPage(
-	pageFileInfo PageFileInfo,
+	pageFileInfo *PageFileInfo,
 	content []byte,
 	dirConfigs []DirConfig,
 ) error {
 	var (
-		err                error
-		pageConfigYamlNode *yaml.Node
-	)
-
-	content, err = frontmatter.Parse(bytes.NewReader(content), &pageConfigYamlNode)
-	if err != nil {
-		return fmt.Errorf("failed to parse file front matter: %w", err)
-	}
-
-	var (
+		err            error
 		pageVariables  map[string]any
 		pageConfigYaml *PageConfigYaml
 		pageConfig     PageConfig
 	)
 
-	if pageConfigYamlNode != nil {
-		if err = pageConfigYamlNode.Decode(&pageVariables); err != nil {
-			return fmt.Errorf("failed to parse page variables yaml config: %w", err)
-		}
+	pageContent := make([]byte, len(content))
+	copy(pageContent, content)
 
-		if err = pageConfigYamlNode.Decode(&pageConfigYaml); err != nil {
-			return fmt.Errorf("failed to parse page yaml config: %w", err)
-		}
+	content, err = frontmatter.Parse(bytes.NewReader(pageContent), &pageVariables)
+	if err != nil {
+		return fmt.Errorf("failed to parse file front matter: %w", err)
+	}
+
+	_, err = frontmatter.Parse(bytes.NewReader(pageContent), &pageConfigYaml)
+	if err != nil {
+		return fmt.Errorf("failed to parse file front matter: %w", err)
 	}
 
 	if pageVariables == nil {
@@ -113,9 +111,9 @@ func (s *Impl) addPage(
 	}
 
 	if pageConfigYaml == nil {
-		pageConfig = NewPageConfigImpl()
+		pageConfig = NewDefaultPageConfig(pageVariables)
 	} else {
-		pageConfig = pageConfigYaml
+		pageConfig = pageConfigYaml.ToPageConfig(pageVariables)
 	}
 
 	pageName := filepath.Join(pageFileInfo.PathWithoutWorkDirAndPagesDir, pageFileInfo.FilenameWithoutExtension)
@@ -131,9 +129,8 @@ func (s *Impl) addPage(
 		pageId,
 		pageName,
 		pageUri,
-		&pageFileInfo,
+		pageFileInfo,
 		content,
-		pageVariables,
 		dirConfigs,
 		pageConfig,
 	)
@@ -147,7 +144,12 @@ func (s *Impl) addPage(
 	return nil
 }
 
-func (s *Impl) getPageFileInfo(pageFilename string) PageFileInfo {
+func (s *Impl) getPageFileInfo(pageFilename string) (*PageFileInfo, error) {
+	stat, err := times.Stat(pageFilename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to stat page file '%s': %w", pageFilename, err)
+	}
+
 	workDir, _ := strings.CutPrefix(s.workDir(), "./")
 	pagesDir, _ := strings.CutPrefix(s.pagesDir(), "./")
 
@@ -169,7 +171,7 @@ func (s *Impl) getPageFileInfo(pageFilename string) PageFileInfo {
 
 	isTemplate := templateExtensionRegexp.MatchString(templateExt)
 
-	pageFileInfo := PageFileInfo{
+	pageFileInfo := &PageFileInfo{
 		Filename:                      pageFilename,
 		BaseFilename:                  filepath.Base(pageFilename),
 		Path:                          pageDir,
@@ -180,9 +182,13 @@ func (s *Impl) getPageFileInfo(pageFilename string) PageFileInfo {
 		FileExtension:                 fileExt,
 		TemplateExtension:             templateExt,
 		IsTemplate:                    isTemplate,
+		CreatedAt:                     stat.BirthTime(),
+		ModifiedAt:                    stat.ModTime(),
+		AccessedAt:                    stat.AccessTime(),
+		ChangedAt:                     stat.ChangeTime(),
 	}
 
-	return pageFileInfo
+	return pageFileInfo, nil
 }
 
 func (s *Impl) processPagesDirEntry(ctx context.Context, dirEntry filetree.Entry, dirConfigs []DirConfig) error {

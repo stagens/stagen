@@ -4,6 +4,7 @@ go 1.25.1
 
 require (
 	github.com/adrg/frontmatter v0.2.0
+	github.com/djherbis/times v1.6.0
 	github.com/pixality-inc/golang-core v0.1.13
 	gopkg.in/yaml.v3 v3.0.1
 )

@@ -13,6 +13,7 @@ import (
 var (
 	ErrThemeConfigNotFound = errors.New("theme config not found")
 	ErrThemeAlreadyExists  = errors.New("theme already exists")
+	ErrThemeNotFound       = errors.New("theme not found")
 )
 
 // nolint:unused
@@ -29,7 +30,8 @@ func (s *Impl) loadThemes(ctx context.Context) error {
 	themesNamesMap := make(map[string]struct{}, 0)
 
 	for _, page := range s.pages {
-		themeName := page.Theme()
+		themeName := page.Config().Theme()
+
 		if themeName == "" {
 			themeName = s.siteConfig.Template().Theme()
 		}
@@ -37,7 +39,7 @@ func (s *Impl) loadThemes(ctx context.Context) error {
 		themesNamesMap[themeName] = struct{}{}
 	}
 
-	for themeName, _ := range themesNamesMap {
+	for themeName := range themesNamesMap {
 		if err := s.loadTheme(ctx, themeName); err != nil {
 			return fmt.Errorf("%w: %s: %w", ErrLoadTheme, themeName, err)
 		}
@@ -89,6 +91,7 @@ func (s *Impl) getThemeConfig(ctx context.Context, themeDir string) (ThemeConfig
 
 	return nil, ErrThemeConfigNotFound
 }
+
 func (s *Impl) readThemeConfig(ctx context.Context, filename string) (ThemeConfig, error) {
 	configContent, err := s.readFile(ctx, filename)
 	if err != nil {

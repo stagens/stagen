@@ -28,6 +28,7 @@ type Impl struct {
 	extraTemplateFunctions textTemplate.FuncMap
 	template               Template
 	context                context.Context // nolint:containedctx
+	data                   any
 	initialized            bool
 	mutex                  sync.Mutex
 }
@@ -71,6 +72,7 @@ func NewWithExtraTemplateFunctions(
 		extraTemplateFunctions: extraTemplateFunctions,
 		template:               template,
 		context:                nil,
+		data:                   nil,
 		initialized:            false,
 		mutex:                  sync.Mutex{},
 	}
@@ -102,6 +104,8 @@ func (e *Impl) Execute(ctx context.Context, layout string, content string, data 
 		return nil, fmt.Errorf("init: %w", err)
 	}
 
+	e.data = data
+
 	tmpl := e.template
 
 	writer := bytes.NewBuffer(nil)
@@ -117,7 +121,7 @@ func (e *Impl) Execute(ctx context.Context, layout string, content string, data 
 		return nil, fmt.Errorf("parse template: %w", err)
 	}
 
-	if err := tmpl.Execute(writer, data); err != nil {
+	if err := tmpl.Execute(writer, e.data); err != nil {
 		return nil, fmt.Errorf("execute template: %w", err)
 	}
 
@@ -198,7 +202,7 @@ func (e *Impl) render(name string) (string, error) {
 
 	writer := bytes.NewBuffer(nil)
 
-	if err := tmpl.ExecuteTemplate(writer, name, nil); err != nil {
+	if err := tmpl.ExecuteTemplate(writer, name, e.data); err != nil {
 		return "", fmt.Errorf("execute template '%s': %w", name, err)
 	}
 

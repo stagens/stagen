@@ -2,12 +2,15 @@ package stagen
 
 import (
 	"context"
+	"fmt"
 
 	"stagen/pkg/template_engine"
 )
 
 type Theme interface {
 	Name() string
+
+	Config() ThemeConfig
 
 	Render(
 		ctx context.Context,
@@ -50,6 +53,10 @@ func (t *ThemeImpl) Name() string {
 	return t.name
 }
 
+func (t *ThemeImpl) Config() ThemeConfig {
+	return t.config
+}
+
 func (t *ThemeImpl) Render(
 	ctx context.Context,
 	layout string,
@@ -62,5 +69,16 @@ func (t *ThemeImpl) Render(
 		t.loader,
 	)
 
-	return templateEngine.Execute(ctx, layout, string(content), data)
+	contentStr := string(content)
+
+	hasBlocks, err := templateEngine.HasBlocks(ctx, contentStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check block: %w", err)
+	}
+
+	if !hasBlocks {
+		contentStr = `{{- define "page_content" -}}` + contentStr + `{{- end -}}`
+	}
+
+	return templateEngine.Execute(ctx, layout, contentStr, data)
 }

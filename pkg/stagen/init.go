@@ -3,6 +3,8 @@ package stagen
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
 )
 
 func (s *Impl) init(ctx context.Context) error {
@@ -16,6 +18,16 @@ func (s *Impl) init(ctx context.Context) error {
 	log := s.log.GetLogger(ctx)
 
 	log.Info("Initializing stagen...")
+
+	log.Infof("Creating build dir...")
+
+	buildDir := s.buildDir()
+
+	if err := os.MkdirAll(buildDir, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create build dir: %w", err)
+	}
+
+	s.buildTime = time.Now()
 
 	if err := s.loadExtensions(ctx); err != nil {
 		return fmt.Errorf("%w: error loading extensions: %w", ErrInit, err)
