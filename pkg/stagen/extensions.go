@@ -36,6 +36,6 @@ func (s *Impl) loadExtension(ctx context.Context, extensionConfig SiteExtensionC
 
 	s.log.GetLogger(ctx).Infof("Loading extension '%s'...", extensionName)
 
-	// @todo
+	// @todo extensions
 	return nil
 }

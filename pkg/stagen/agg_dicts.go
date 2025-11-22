@@ -25,6 +25,6 @@ func (s *Impl) loadAggDict(ctx context.Context, aggDictConfig SiteAggDictConfig)
 
 	s.log.GetLogger(ctx).Infof("Loading agg dict '%s'...", aggDictName)
 
-	// @todo
+	// @todo agg dicts
 	return nil
 }

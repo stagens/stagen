@@ -43,8 +43,8 @@ type Impl struct {
 	initialized  bool
 	extensions   map[string]Extension
 	databases    map[string]Database
-	aggDicts     map[string]any            // @todo
-	aggDictsData map[string]map[string]any // @todo
+	aggDicts     map[string]any            // @todo agg dicts
+	aggDictsData map[string]map[string]any // @todo agg dicts
 	pages        map[string]Page
 	themes       map[string]Theme
 	createdDirs  map[string]struct{}

@@ -49,7 +49,7 @@ func (s *Impl) Build(ctx context.Context) error {
 func (s *Impl) getBasePageConfig() PageConfig {
 	templateConfig := s.siteConfig.Template()
 
-	pageConfig := NewPageConfig(
+	var pageConfig PageConfig = NewPageConfig(
 		templateConfig.Theme(),
 		templateConfig.DefaultLayout(),
 		"",
@@ -60,7 +60,9 @@ func (s *Impl) getBasePageConfig() PageConfig {
 		templateConfig.Extras(),
 	)
 
-	// @todo merge with extensions
+	for _, extension := range s.extensions {
+		pageConfig = MergePageConfigs(pageConfig, extension.Config().ToPageConfig())
+	}
 
 	return pageConfig
 }
