@@ -25,6 +25,8 @@ var (
 	databaseFilenameRegexp   = regexp.MustCompile(`^(.*)\.(yml|yaml)$`)
 	pageIgnoreFilenameRegexp = regexp.MustCompile(`(^\.|^(.*)\.(yml|yaml)$)`)
 	templateExtensionRegexp  = regexp.MustCompile(`(\.tmpl)`)
+	markdownExtensionRegexp  = regexp.MustCompile(`(\.md)`)
+	htmlExtensionRegexp      = regexp.MustCompile(`(\.html|\.htm)`)
 	configFilenames          = []string{
 		"config.yml",
 		"config.yaml",

@@ -3,9 +3,24 @@ a: 1
 title: Index
 ---
 
+{{- define "macro:Image" }}<img src="{{.url}}" />{{ end -}}
+
+{{- define "macro:Test" }}Test done: {{ .content }}{{ end -}}
+
+{{- define "macro:OMG" }}OMG!!!11111{{ end -}}
+
+{{- define "page_content" }}
 # This is an index page {{.a}}
-Id = {{.Page.Id}}
-Name = {{.Page.Name}}
-Title = {{.Page.Title}}
-Uri = {{.Page.Uri}}
-Url = {{.Page.Url}}
+- Id = {{.Page.Id}}
+- Name = {{.Page.Name}}
+- Title = {{.Page.Title}}
+- Uri = {{.Page.Uri}}
+- Url = {{.Page.Url}}
+
+<Image url="https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg" />
+
+<Test foo=bar>
+This is a **test**!
+<OMG />
+</Test>
+{{ end -}}

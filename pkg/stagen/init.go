@@ -41,10 +41,6 @@ func (s *Impl) init(ctx context.Context) error {
 		return fmt.Errorf("%w: error loading pages: %w", ErrInit, err)
 	}
 
-	if err := s.loadThemes(ctx); err != nil {
-		return fmt.Errorf("%w: error loading themes: %w", ErrInit, err)
-	}
-
 	if err := s.loadAggDicts(ctx); err != nil {
 		return fmt.Errorf("%w: error loading agg dicts: %w", ErrInit, err)
 	}

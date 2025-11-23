@@ -16,6 +16,8 @@ type PageFileInfo struct {
 	FileExtension                 string
 	TemplateExtension             string
 	IsTemplate                    bool
+	IsMarkdown                    bool
+	IsHtml                        bool
 	CreatedAt                     time.Time
 	ModifiedAt                    time.Time
 	AccessedAt                    time.Time

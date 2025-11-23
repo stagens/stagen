@@ -3,9 +3,13 @@ module stagen
 go 1.25.1
 
 require (
+	github.com/VojtaStruhar/goldmark-obsidian-callout v0.1.0
 	github.com/adrg/frontmatter v0.2.0
 	github.com/djherbis/times v1.6.0
 	github.com/pixality-inc/golang-core v0.1.13
+	github.com/quailyquaily/goldmark-enclave v0.2.2
+	github.com/yuin/goldmark v1.7.8
+	golang.org/x/net v0.46.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

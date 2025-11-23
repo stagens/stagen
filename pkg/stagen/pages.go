@@ -70,6 +70,7 @@ func (s *Impl) loadPage(
 	}
 
 	err = s.addPage(
+		ctx,
 		pageFileInfo,
 		fileContent,
 		dirConfigs,
@@ -82,6 +83,7 @@ func (s *Impl) loadPage(
 }
 
 func (s *Impl) addPage(
+	ctx context.Context,
 	pageFileInfo *PageFileInfo,
 	content []byte,
 	dirConfigs []DirConfig,
@@ -90,7 +92,7 @@ func (s *Impl) addPage(
 		err            error
 		pageVariables  map[string]any
 		pageConfigYaml *PageConfigYaml
-		pageConfig     PageConfig
+		readPageConfig PageConfig
 	)
 
 	pageContent := make([]byte, len(content))
@@ -111,10 +113,25 @@ func (s *Impl) addPage(
 	}
 
 	if pageConfigYaml == nil {
-		pageConfig = NewDefaultPageConfig(pageVariables)
+		readPageConfig = NewDefaultPageConfig(pageVariables)
 	} else {
-		pageConfig = pageConfigYaml.ToPageConfig(pageVariables)
+		readPageConfig = pageConfigYaml.ToPageConfig(pageVariables)
 	}
+
+	basePageConfig := s.getBasePageConfig()
+
+	tempPageConfig := MergePageConfigs(basePageConfig, readPageConfig)
+
+	themeId := tempPageConfig.Theme()
+
+	theme, err := s.loadTheme(ctx, themeId)
+	if err != nil {
+		return fmt.Errorf("failed to load theme '%s': %w", themeId, err)
+	}
+
+	pageConfig := MergePageConfigs(basePageConfig, theme.Config().ToPageConfig())
+
+	pageConfig = MergePageConfigs(pageConfig, readPageConfig)
 
 	pageName := filepath.Join(pageFileInfo.PathWithoutWorkDirAndPagesDir, pageFileInfo.FilenameWithoutExtension)
 
@@ -155,10 +172,10 @@ func (s *Impl) getPageFileInfo(pageFilename string) (*PageFileInfo, error) {
 
 	pageDir := filepath.Dir(pageFilename)
 	pageDirWithoutWorkDir := strings.TrimPrefix(pageDir, workDir+"/")
-	pageFilenameWithoutExt, fullExt := removeFileExtension(pageFilename)
-	pageFilenameWithoutExt = filepath.Base(pageFilenameWithoutExt)
+	fullPageFilenameWithoutExt, fullExt := removeFileExtension(pageFilename)
+	pageFilenameWithoutExt := filepath.Base(fullPageFilenameWithoutExt)
 
-	fileExt := strings.TrimPrefix(pageFilename, pageFilenameWithoutExt)
+	fileExt := strings.TrimPrefix(pageFilename, fullPageFilenameWithoutExt)
 	templateExt := filepath.Ext(fullExt)
 	pageDirWithoutWorkDirAndPagesDir, _ := strings.CutPrefix(pageDir, pagesDir+"/")
 	pageDirWithoutWorkDirAndPagesDir, _ = strings.CutPrefix(pageDirWithoutWorkDirAndPagesDir, pagesDir)
@@ -170,6 +187,8 @@ func (s *Impl) getPageFileInfo(pageFilename string) (*PageFileInfo, error) {
 	}
 
 	isTemplate := templateExtensionRegexp.MatchString(templateExt)
+	isMarkdown := markdownExtensionRegexp.MatchString(fileExt)
+	isHtml := htmlExtensionRegexp.MatchString(fileExt)
 
 	pageFileInfo := &PageFileInfo{
 		Filename:                      pageFilename,
@@ -182,6 +201,8 @@ func (s *Impl) getPageFileInfo(pageFilename string) (*PageFileInfo, error) {
 		FileExtension:                 fileExt,
 		TemplateExtension:             templateExt,
 		IsTemplate:                    isTemplate,
+		IsMarkdown:                    isMarkdown,
+		IsHtml:                        isHtml,
 		CreatedAt:                     stat.BirthTime(),
 		ModifiedAt:                    stat.ModTime(),
 		AccessedAt:                    stat.AccessTime(),

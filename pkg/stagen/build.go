@@ -56,6 +56,7 @@ func (s *Impl) getBasePageConfig() PageConfig {
 		false,
 		false,
 		templateConfig.Variables(),
+		templateConfig.Imports(),
 		templateConfig.Includes(),
 		templateConfig.Extras(),
 	)
@@ -130,7 +131,7 @@ func (s *Impl) getPageRenderConfig(
 ) (*PageRenderConfig, error) {
 	pageId := page.Id()
 
-	pageConfig := MergePageConfigs(s.getBasePageConfig(), page.Config())
+	pageConfig := page.Config()
 
 	themeId := pageConfig.Theme()
 
@@ -138,12 +139,6 @@ func (s *Impl) getPageRenderConfig(
 	if !ok {
 		return nil, fmt.Errorf("%w: %s for page '%s'", ErrThemeNotFound, themeId, pageId)
 	}
-
-	pageConfig = MergePageConfigs(s.getBasePageConfig(), theme.Config().ToPageConfig())
-
-	pageConfig = MergePageConfigs(pageConfig, page.Config())
-
-	layout := pageConfig.Layout()
 
 	data, err := s.getTemplateData(ctx, page, pageConfig)
 	if err != nil {
@@ -156,7 +151,7 @@ func (s *Impl) getPageRenderConfig(
 		Page:       page,
 		PageConfig: pageConfig,
 		Theme:      theme,
-		Layout:     layout,
+		Layout:     pageConfig.Layout(),
 		Data:       data,
 		Content:    pageContent,
 	}
@@ -169,8 +164,10 @@ func (s *Impl) renderPage(ctx context.Context, pageRenderConfig *PageRenderConfi
 
 	renderedContent, err := pageRenderConfig.Theme.Render(
 		ctx,
+		pageRenderConfig.PageConfig.Imports(),
 		pageRenderConfig.Layout,
 		pageRenderConfig.Content,
+		pageRenderConfig.Page.FileInfo().IsMarkdown,
 		pageRenderConfig.Data,
 	)
 	if err != nil {
@@ -235,10 +232,15 @@ func (s *Impl) saveBuildPage(
 ) error {
 	log := s.log.GetLogger(ctx)
 
-	filename := filepath.Join(pageFileInfo.PathWithoutWorkDirAndPagesDir, pageFileInfo.BaseFilename)
+	fileExt := pageFileInfo.FileExtension
+	if pageFileInfo.IsMarkdown {
+		fileExt = ".html"
+	}
+
+	filename := filepath.Join(pageFileInfo.PathWithoutWorkDirAndPagesDir, pageFileInfo.FilenameWithoutExtension) + fileExt
 	saveFilename := filepath.Join(s.buildDir(), filename)
 
-	log.Infof(
+	log.Debugf(
 		"Saving %d bytes to %s...",
 		len(content),
 		saveFilename,
@@ -246,7 +248,7 @@ func (s *Impl) saveBuildPage(
 
 	dir := filepath.Dir(saveFilename)
 	if _, ok := s.createdDirs[dir]; !ok {
-		log.Infof("Creating directory '%s'...", dir)
+		log.Debugf("Creating directory '%s'...", dir)
 
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 			return fmt.Errorf("failed to create directory '%s': %w", dir, err)

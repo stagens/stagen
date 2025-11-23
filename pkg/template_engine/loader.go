@@ -14,6 +14,7 @@ type LoadType string
 
 const (
 	LoadTypeLayout  LoadType = "extends"
+	LoadTypeImport  LoadType = "import"
 	LoadTypeInclude LoadType = "include"
 )
 

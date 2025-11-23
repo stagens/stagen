@@ -26,49 +26,32 @@ func (s *Impl) themesDir() string {
 	return dir
 }
 
-func (s *Impl) loadThemes(ctx context.Context) error {
-	themesNamesMap := make(map[string]struct{}, 0)
-
-	for _, page := range s.pages {
-		themeName := page.Config().Theme()
-
-		if themeName == "" {
-			themeName = s.siteConfig.Template().Theme()
-		}
-
-		themesNamesMap[themeName] = struct{}{}
+func (s *Impl) loadTheme(ctx context.Context, themeId string) (Theme, error) {
+	if themeId == "" {
+		return nil, ErrNoName
 	}
 
-	for themeName := range themesNamesMap {
-		if err := s.loadTheme(ctx, themeName); err != nil {
-			return fmt.Errorf("%w: %s: %w", ErrLoadTheme, themeName, err)
-		}
-	}
-
-	return nil
-}
-
-func (s *Impl) loadTheme(ctx context.Context, themeName string) error {
-	if themeName == "" {
-		return ErrNoName
+	if existsTheme, ok := s.themes[themeId]; ok {
+		return existsTheme, nil
 	}
 
 	log := s.log.GetLogger(ctx)
 
-	log.Infof("Loading theme '%s'...", themeName)
+	log.Infof("Loading theme '%s'...", themeId)
 
-	themeDir := filepath.Join(s.themesDir(), themeName)
+	themeDir := filepath.Join(s.themesDir(), themeId)
 
 	themeConfig, err := s.getThemeConfig(ctx, themeDir)
 	if err != nil {
-		return fmt.Errorf("theme '%s': %w", themeName, err)
+		return nil, fmt.Errorf("theme '%s': %w", themeId, err)
 	}
 
-	if err = s.addTheme(themeName, themeDir, themeConfig); err != nil {
-		return fmt.Errorf("can't add theme '%s': %w", themeName, err)
+	theme, err := s.addTheme(themeId, themeDir, themeConfig)
+	if err != nil {
+		return nil, fmt.Errorf("can't add theme '%s': %w", themeId, err)
 	}
 
-	return nil
+	return theme, nil
 }
 
 func (s *Impl) getThemeConfig(ctx context.Context, themeDir string) (ThemeConfig, error) {
@@ -111,28 +94,28 @@ func (s *Impl) addTheme(
 	themeId string,
 	themeDir string,
 	themeConfig ThemeConfig,
-) error {
-	if _, ok := s.pages[themeId]; ok {
-		return fmt.Errorf("%w: %s", ErrThemeAlreadyExists, themeId)
-	}
-
+) (Theme, error) {
 	layoutsIncludePaths := make([]string, 0)
+	importPaths := make([]string, 0)
 	includePaths := make([]string, 0)
 
 	templatesDir := s.templatesDir()
 
 	layoutsIncludePaths = append(layoutsIncludePaths, filepath.Join(templatesDir, "layouts"))
+	importPaths = append(importPaths, filepath.Join(templatesDir, "imports"))
 	includePaths = append(includePaths, filepath.Join(templatesDir, "includes"))
 
 	for _, extension := range s.extensions {
 		layoutsIncludePaths = append(layoutsIncludePaths, filepath.Join(extension.Path(), "layouts"))
+		importPaths = append(importPaths, filepath.Join(extension.Path(), "imports"))
 		includePaths = append(includePaths, filepath.Join(extension.Path(), "includes"))
 	}
 
 	layoutsIncludePaths = append(layoutsIncludePaths, filepath.Join(themeDir, "layouts"))
+	importPaths = append(importPaths, filepath.Join(themeDir, "imports"))
 	includePaths = append(includePaths, filepath.Join(themeDir, "includes"))
 
-	s.themes[themeId] = NewTheme(themeId, themeDir, themeConfig, layoutsIncludePaths, includePaths)
+	s.themes[themeId] = NewTheme(themeId, themeDir, themeConfig, layoutsIncludePaths, importPaths, includePaths)
 
-	return nil
+	return s.themes[themeId], nil
 }

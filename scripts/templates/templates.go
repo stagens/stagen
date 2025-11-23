@@ -81,7 +81,7 @@ func main() {
 		template_engine.LoadTypeLayout: {
 			"layout": layoutTemplate,
 		},
-		template_engine.LoadTypeInclude: {
+		template_engine.LoadTypeImport: {
 			"test":         testTemplate,
 			"another_body": anotherBodyTemplate,
 		},

@@ -50,6 +50,10 @@ func (c *SiteConfigCopyrightYaml) Rights() string {
 	return c.RightsValue
 }
 
+type SiteConfigTemplateImportYaml struct {
+	NameValue string `yaml:"name"`
+}
+
 type SiteConfigTemplateIncludeYaml struct {
 	NameValue string `yaml:"name"`
 }
@@ -62,6 +66,7 @@ type SiteConfigTemplateYaml struct {
 	ThemeValue         string                                      `env:"THEME"          env-default:"default"  yaml:"theme"`
 	DefaultLayoutValue string                                      `env:"DEFAULT_LAYOUT" env-default:"_default" yaml:"default_layout"`
 	VariablesValue     map[string]any                              `yaml:"variables"`
+	ImportsValue       map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
 	IncludesValue      map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue        map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
 }
@@ -76,6 +81,10 @@ func (c *SiteConfigTemplateYaml) DefaultLayout() string {
 
 func (c *SiteConfigTemplateYaml) Variables() map[string]any {
 	return c.VariablesValue
+}
+
+func (c *SiteConfigTemplateYaml) Imports() map[string][]SiteConfigTemplateImport {
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateImportYaml, SiteConfigTemplateImport](c.ImportsValue)
 }
 
 func (c *SiteConfigTemplateYaml) Includes() map[string][]SiteConfigTemplateInclude {
@@ -147,6 +156,7 @@ type ThemeConfigYaml struct {
 	AuthorValue        ThemeConfigAuthorYaml                       `yaml:"author"`
 	DefaultLayoutValue string                                      `yaml:"default_layout"`
 	VariablesValue     map[string]any                              `yaml:"variables"`
+	ImportsValue       map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
 	IncludesValue      map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue        map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
 }
@@ -171,6 +181,10 @@ func (c *ThemeConfigYaml) Variables() map[string]any {
 	return c.VariablesValue
 }
 
+func (c *ThemeConfigYaml) Imports() map[string][]SiteConfigTemplateImport {
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateImportYaml, SiteConfigTemplateImport](c.ImportsValue)
+}
+
 func (c *ThemeConfigYaml) Includes() map[string][]SiteConfigTemplateInclude {
 	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
 }
@@ -187,6 +201,7 @@ func (c *ThemeConfigYaml) ToPageConfig() PageConfig {
 		false,
 		false,
 		c.Variables(),
+		c.Imports(),
 		c.Includes(),
 		c.Extras(),
 	)
@@ -295,6 +310,7 @@ type DirConfigYaml struct {
 	IsHiddenValue  bool                                        `yaml:"is_hidden"`
 	isDraftValue   bool                                        `yaml:"is_draft"`
 	VariablesValue map[string]any                              `yaml:"variables"`
+	ImportsValue   map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
 	IncludesValue  map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue    map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
 }
@@ -323,6 +339,10 @@ func (c *DirConfigYaml) Variables() map[string]any {
 	return c.VariablesValue
 }
 
+func (c *DirConfigYaml) Imports() map[string][]SiteConfigTemplateImport {
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateImportYaml, SiteConfigTemplateImport](c.ImportsValue)
+}
+
 func (c *DirConfigYaml) Includes() map[string][]SiteConfigTemplateInclude {
 	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
 }
@@ -337,6 +357,7 @@ type PageConfigYaml struct {
 	TitleValue    string                                      `yaml:"title"`
 	IsHiddenValue bool                                        `yaml:"is_hidden"`
 	IsDraftValue  bool                                        `yaml:"is_draft_value"`
+	ImportsValue  map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
 	IncludesValue map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue   map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
 }
@@ -349,6 +370,7 @@ func (c *PageConfigYaml) ToPageConfig(variables map[string]any) PageConfig {
 		c.IsHiddenValue,
 		c.IsDraftValue,
 		variables,
+		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateImportYaml, SiteConfigTemplateImport](c.ImportsValue),
 		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue),
 		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue),
 	)

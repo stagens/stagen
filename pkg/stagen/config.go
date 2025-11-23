@@ -82,6 +82,7 @@ type ThemeConfig interface {
 	Author() ThemeAuthor
 	DefaultLayout() string
 	Variables() map[string]any
+	Imports() map[string][]SiteConfigTemplateImport
 	Includes() map[string][]SiteConfigTemplateInclude
 	Extras() map[string][]SiteConfigTemplateExtra
 	ToPageConfig() PageConfig
@@ -95,6 +96,7 @@ type DirConfig interface {
 	IsHidden() bool
 	IsDraft() bool
 	Variables() map[string]any
+	Imports() map[string][]SiteConfigTemplateImport
 	Includes() map[string][]SiteConfigTemplateInclude
 	Extras() map[string][]SiteConfigTemplateExtra
 }
@@ -107,8 +109,16 @@ type PageConfig interface {
 	IsHidden() bool
 	IsDraft() bool
 	Variables() map[string]any
+	Imports() map[string][]SiteConfigTemplateImport
 	Includes() map[string][]SiteConfigTemplateInclude
 	Extras() map[string][]SiteConfigTemplateExtra
+}
+
+// SiteConfigTemplateImport
+//
+//nolint:iface
+type SiteConfigTemplateImport interface {
+	Name() string
 }
 
 // SiteConfigTemplateInclude
@@ -129,6 +139,7 @@ type SiteConfigTemplate interface {
 	Theme() string
 	DefaultLayout() string
 	Variables() map[string]any
+	Imports() map[string][]SiteConfigTemplateImport
 	Includes() map[string][]SiteConfigTemplateInclude
 	Extras() map[string][]SiteConfigTemplateExtra
 }
@@ -152,6 +163,7 @@ type PageConfigImpl struct {
 	isHidden  bool
 	isDraft   bool
 	variables map[string]any
+	imports   map[string][]SiteConfigTemplateImport
 	includes  map[string][]SiteConfigTemplateInclude
 	extras    map[string][]SiteConfigTemplateExtra
 }
@@ -166,6 +178,7 @@ func NewDefaultPageConfig(variables map[string]any) *PageConfigImpl {
 		variables,
 		nil,
 		nil,
+		nil,
 	)
 }
 
@@ -176,11 +189,16 @@ func NewPageConfig(
 	isHidden bool,
 	isDraft bool,
 	variables map[string]any,
+	imports map[string][]SiteConfigTemplateImport,
 	includes map[string][]SiteConfigTemplateInclude,
 	extras map[string][]SiteConfigTemplateExtra,
 ) *PageConfigImpl {
 	if variables == nil {
 		variables = make(map[string]any)
+	}
+
+	if imports == nil {
+		imports = make(map[string][]SiteConfigTemplateImport)
 	}
 
 	if includes == nil {
@@ -198,6 +216,7 @@ func NewPageConfig(
 		isHidden:  isHidden,
 		isDraft:   isDraft,
 		variables: variables,
+		imports:   imports,
 		includes:  includes,
 		extras:    extras,
 	}
@@ -225,6 +244,10 @@ func (p *PageConfigImpl) IsDraft() bool {
 
 func (p *PageConfigImpl) Variables() map[string]any {
 	return p.variables
+}
+
+func (p *PageConfigImpl) Imports() map[string][]SiteConfigTemplateImport {
+	return p.imports
 }
 
 func (p *PageConfigImpl) Includes() map[string][]SiteConfigTemplateInclude {
@@ -264,6 +287,9 @@ func MergePageConfigs(cfg1 PageConfig, cfg2 PageConfig) PageConfig {
 	variables := cfg1.Variables()
 	maps.Copy(variables, cfg2.Variables())
 
+	imports := cfg1.Imports()
+	maps.Copy(imports, cfg2.Imports())
+
 	includes := cfg1.Includes()
 	maps.Copy(includes, cfg2.Includes())
 
@@ -277,6 +303,7 @@ func MergePageConfigs(cfg1 PageConfig, cfg2 PageConfig) PageConfig {
 		isHidden,
 		isDraft,
 		variables,
+		imports,
 		includes,
 		extras,
 	)
