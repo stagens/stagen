@@ -3,8 +3,10 @@ package stagen
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 
+	"gopkg.in/yaml.v2"
 	"stagen/pkg/filetree"
 )
 
@@ -53,6 +55,24 @@ func (s *Impl) loadDatabase(ctx context.Context, databaseFilename string) error 
 
 	log.Infof("Loading database %s...", databaseFilename)
 
-	// @todo databases
+	databaseContent, err := os.ReadFile(databaseFilename)
+	if err != nil {
+		return fmt.Errorf("%w: failed to read database file '%s': %w", ErrLoadDatabase, databaseFilename, err)
+	}
+
+	var databaseYaml *DatabaseConfigYaml
+
+	if err = yaml.Unmarshal(databaseContent, &databaseYaml); err != nil {
+		return fmt.Errorf("%w: failed to parse database file '%s': %w", ErrLoadDatabase, databaseFilename, err)
+	}
+
+	database := NewDatabase(
+		databaseYaml.Name(),
+		databaseYaml.Data(),
+		databaseYaml,
+	)
+
+	s.databases[databaseYaml.Name()] = database
+
 	return nil
 }

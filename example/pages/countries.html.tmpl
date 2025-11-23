@@ -1,0 +1,20 @@
+---
+title: Countries
+---
+
+<table>
+  <thead>
+  <tr>
+    <th>Code</th>
+    <th>Name</th>
+  </tr>
+  </thead>
+  <tbody>
+  {{- range .Databases.countries.Data }}
+    <tr>
+      <td>{{ .id }}</td>
+      <td>{{ .name }}</td>
+    </tr>
+  {{ end -}}
+  </tbody>
+</table>

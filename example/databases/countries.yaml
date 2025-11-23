@@ -1,3 +1,7 @@
 ---
 name: countries
-data: []
+data:
+  - id: gb
+    name: Great Britain
+  - id: us
+    name: United States of America
