@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/pixality-inc/golang-core/json"
+
 	"stagen/pkg/html_preprocessor"
 	"stagen/pkg/markdown"
 	"stagen/pkg/template_engine"
@@ -118,29 +119,10 @@ func (t *ThemeImpl) Render(
 		t.loader,
 		template.FuncMap{
 			"page_content": func() (string, error) {
-				renderResult, err := templateEngine.Render(ctx, "page_content")
-				if err != nil {
-					return "", err
-				}
-
-				if isMarkdown {
-					markdownResult, err := t.markdown.Render(renderResult)
-					if err != nil {
-						return "", fmt.Errorf("failed to render markdown: %w", err)
-					}
-
-					return string(markdownResult), nil
-				}
-
-				return string(renderResult), err
+				return t.renderPageContent(ctx, templateEngine, isMarkdown)
 			},
-			"markdown": func(s string) (string, error) {
-				markdownResult, err := t.markdown.Render([]byte(s))
-				if err != nil {
-					return "", fmt.Errorf("failed to render markdown: %w", err)
-				}
-
-				return string(markdownResult), nil
+			"markdown": func(text string) (string, error) {
+				return t.renderMarkdown(ctx, text)
 			},
 		},
 	)
@@ -151,7 +133,7 @@ func (t *ThemeImpl) Render(
 	}
 
 	for _, importValue := range importsValues {
-		if _, err := templateEngine.Import(ctx, template_engine.LoadTypeImport, importValue.Name()); err != nil {
+		if _, err := templateEngine.Import(ctx, template_engine.LoadTypeImport, importValue.Name(), true); err != nil {
 			return nil, fmt.Errorf("import '%s': %w", importValue.Name(), err)
 		}
 	}
@@ -187,4 +169,38 @@ func (t *ThemeImpl) Render(
 	}
 
 	return templateResult, err
+}
+
+func (t *ThemeImpl) renderPageContent(
+	ctx context.Context,
+	templateEngine template_engine.TemplateEngine,
+	isMarkdown bool,
+) (string, error) {
+	renderResult, err := templateEngine.Render(ctx, "page_content")
+	if err != nil {
+		return "", err
+	}
+
+	if isMarkdown {
+		markdownResult, err := t.markdown.Render(renderResult)
+		if err != nil {
+			return "", fmt.Errorf("failed to render markdown: %w", err)
+		}
+
+		return string(markdownResult), nil
+	}
+
+	return string(renderResult), err
+}
+
+func (t *ThemeImpl) renderMarkdown(
+	_ context.Context,
+	text string,
+) (string, error) {
+	markdownResult, err := t.markdown.Render([]byte(text))
+	if err != nil {
+		return "", fmt.Errorf("failed to render markdown: %w", err)
+	}
+
+	return string(markdownResult), nil
 }

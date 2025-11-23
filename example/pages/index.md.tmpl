@@ -3,14 +3,11 @@ a: 1
 title: Index
 ---
 
-{{- define "macro:Image" }}<img src="{{.url}}" />{{ end -}}
-
-{{- define "macro:Test" }}Test done: {{ .content }}{{ end -}}
-
-{{- define "macro:OMG" }}OMG!!!11111{{ end -}}
+{{ import "test" }}
 
 {{- define "page_content" }}
-# This is an index page {{.a}}
+# This is an index page
+- A = {{.a}}
 - Id = {{.Page.Id}}
 - Name = {{.Page.Name}}
 - Title = {{.Page.Title}}
@@ -19,8 +16,12 @@ title: Index
 
 <Image url="https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg" />
 
+{{ include "test" (dict "a" 100) }}
+{{ include "test" . }}
+
 <Test foo=bar>
 This is a **test**!
+{{ include "test" (dict "a" 100500) }}
 <OMG />
 </Test>
 {{ end -}}

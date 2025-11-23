@@ -22,7 +22,7 @@ type TemplateEngine interface {
 	Execute(ctx context.Context, layout string, content string, data any) ([]byte, error)
 	Render(ctx context.Context, name string) ([]byte, error)
 	RenderBlock(ctx context.Context, name string, data any) ([]byte, error)
-	Import(ctx context.Context, loadType LoadType, name string) ([]byte, error)
+	Import(ctx context.Context, loadType LoadType, name string, withCache bool) ([]byte, error)
 	Include(ctx context.Context, name string, data any) ([]byte, error)
 }
 
@@ -35,6 +35,7 @@ type Impl struct {
 	context                context.Context // nolint:containedctx
 	data                   any
 	initialized            bool
+	imported               map[string]struct{}
 	mutex                  sync.Mutex
 }
 
@@ -79,6 +80,7 @@ func NewWithExtraTemplateFunctions(
 		context:                nil,
 		data:                   nil,
 		initialized:            false,
+		imported:               make(map[string]struct{}),
 		mutex:                  sync.Mutex{},
 	}
 }
@@ -116,7 +118,7 @@ func (e *Impl) Execute(ctx context.Context, layout string, content string, data 
 	writer := bytes.NewBuffer(nil)
 
 	if layout != "" {
-		importResult, err := e.Import(ctx, LoadTypeLayout, layout)
+		importResult, err := e.Import(ctx, LoadTypeLayout, layout, true)
 		if err != nil {
 			return nil, fmt.Errorf("include layout %s: %w", layout, err)
 		}
@@ -168,8 +170,19 @@ func (e *Impl) RenderBlock(_ context.Context, name string, data any) ([]byte, er
 	return writer.Bytes(), nil
 }
 
-func (e *Impl) Import(ctx context.Context, loadType LoadType, name string) ([]byte, error) {
-	e.log.GetLoggerWithoutContext().Tracef("Import template type %s '%s'", loadType, name)
+func (e *Impl) Import(ctx context.Context, loadType LoadType, name string, withCache bool) ([]byte, error) {
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
+
+	uniqueName := string(loadType) + "::" + name
+
+	if withCache {
+		if _, ok := e.imported[uniqueName]; ok {
+			return nil, nil
+		}
+	}
+
+	e.log.GetLogger(ctx).Tracef("Import template type %s '%s'", loadType, name)
 
 	content, err := e.loader.Load(ctx, loadType, name)
 	if err != nil {
@@ -180,12 +193,29 @@ func (e *Impl) Import(ctx context.Context, loadType LoadType, name string) ([]by
 		return nil, fmt.Errorf("parse template type %s '%s': %w", loadType, name, err)
 	}
 
+	if withCache {
+		e.imported[uniqueName] = struct{}{}
+	}
+
 	return nil, nil
 }
 
-func (e *Impl) Include(_ context.Context, name string, data any) ([]byte, error) {
-	// @todo
-	return []byte("[TODO:INCLUDE:" + name + "]"), nil
+func (e *Impl) Include(ctx context.Context, name string, data any) ([]byte, error) {
+	importResult, err := e.Import(ctx, LoadTypeInclude, name, false)
+	if err != nil {
+		return nil, fmt.Errorf("include '%s': %w", name, err)
+	}
+
+	renderResult, err := e.RenderBlock(ctx, name, data)
+	if err != nil {
+		return nil, fmt.Errorf("render block '%s': %w", name, err)
+	}
+
+	result := make([]byte, len(importResult)+len(renderResult))
+	copy(result, importResult)
+	copy(result, renderResult)
+
+	return result, nil
 }
 
 func (e *Impl) init(ctx context.Context) error {
@@ -202,7 +232,7 @@ func (e *Impl) init(ctx context.Context) error {
 		"dict":       e.dict,
 		"json_parse": e.jsonParse,
 		"import": func(path string) (string, error) {
-			result, err := e.Import(e.context, LoadTypeImport, path)
+			result, err := e.Import(e.context, LoadTypeImport, path, true)
 			if err != nil {
 				return "", err
 			}
