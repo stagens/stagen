@@ -11,3 +11,7 @@ stagen:
 
 site:
   name: My Stagen Website
+  copyright:
+    title: Stagen Developers
+    year: 2025
+    rights: All rights reserved.

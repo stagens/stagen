@@ -1,7 +1,7 @@
 {{- define "main" }}
   <section class="card">
     {{ if and (.Page.Title) (not .no_title) }}<h1>{{ .Page.Title }}</h1>{{ end }}
-    {{ render "page_content" }}
+    {{ page_content }}
   </section>
 {{ end -}}
 

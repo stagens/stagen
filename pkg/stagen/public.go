@@ -26,7 +26,7 @@ func (s *Impl) copyPublicFiles(ctx context.Context) error {
 
 	log.Infof("Creating public dir...")
 
-	buildPublicDir := filepath.Join(s.buildDir(), "public")
+	buildPublicDir := s.buildDir()
 
 	//nolint:gosec
 	if err := os.MkdirAll(buildPublicDir, os.ModePerm); err != nil {

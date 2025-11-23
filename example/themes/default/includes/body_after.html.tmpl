@@ -1,9 +1,10 @@
-{{- define "head_after" }}
-{% for js in extras.js %}
-{% set url = js %}
-    {% if url.endsWith(".js") %}
-        {% do url = url + "?" + gen_time %}
-    {% endif %}
-<script src="{{ url }}" async></script>
-{% endfor %}
+{{- define "body_after" }}
+  {{- range .Page.Extras.js }}
+    {{ $url := .Url }}
+    {{- if has_suffix $url ".js" }}
+      <script src="{{ $url }}?_={{ $.System.BuildTime.Unix }}"{{- if .Options.Async }} async{{ end -}}></script>
+    {{- else }}
+      <script src="{{ $url }}"{{- if .Options.Async }} async{{ end -}}></script>
+    {{ end -}}
+  {{ end -}}
 {{ end }}
