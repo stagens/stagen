@@ -2,6 +2,7 @@ package template_engine
 
 import (
 	"text/template"
+	"text/template/parse"
 
 	"stagen/pkg/util"
 )
@@ -37,11 +38,6 @@ func (t *TextTemplate) Funcs(functions template.FuncMap) {
 	_ = t.template.Funcs(functions)
 }
 
-func (t *TextTemplate) Clone() (Template, error) {
-	tmpl, err := t.template.Clone()
-	if err != nil {
-		return nil, err
-	}
-
-	return newTextTemplateFromTemplate(tmpl), nil
+func (t *TextTemplate) ParseTree() *parse.Tree {
+	return t.template.Tree
 }

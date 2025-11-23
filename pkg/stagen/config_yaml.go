@@ -54,12 +54,29 @@ type SiteConfigTemplateImportYaml struct {
 	NameValue string `yaml:"name"`
 }
 
+func (c *SiteConfigTemplateImportYaml) Name() string {
+	return c.NameValue
+}
+
 type SiteConfigTemplateIncludeYaml struct {
 	NameValue string `yaml:"name"`
 }
 
+func (c *SiteConfigTemplateIncludeYaml) Name() string {
+	return c.NameValue
+}
+
 type SiteConfigTemplateExtraYaml struct {
-	NameValue string `yaml:"name"`
+	UrlValue     string         `yaml:"url"`
+	OptionsValue map[string]any `yaml:"options"`
+}
+
+func (c *SiteConfigTemplateExtraYaml) Url() string {
+	return c.UrlValue
+}
+
+func (c *SiteConfigTemplateExtraYaml) Options() map[string]any {
+	return c.OptionsValue
 }
 
 type SiteConfigTemplateYaml struct {

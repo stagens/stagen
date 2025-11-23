@@ -1,0 +1,12 @@
+{@<script>
+let currentYear = date_format(now(), "%Y")
+let copyrightYear = settings.site.copyright.year
+let copyrightYears = []
+if (copyrightYear > 0 && copyrightYear < currentYear) {
+    copyrightYears.push(copyrightYear)
+}
+copyrightYears.push(currentYear)
+</script>@}
+{% if settings.site.copyright.rights %}<div class="footer-rights">{{ settings.site.copyright.rights }}</div>{% endif %}
+<div class="footer-copyright">&copy; Copyright {{ copyrightYears.join("-") }}, {{ settings.site.title }}</div>
+<div class="footer-stagen">Made with <a href="https://github.com/stagens/stagen" target="_blank">stagen</a></div>

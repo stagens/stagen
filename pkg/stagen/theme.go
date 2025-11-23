@@ -9,6 +9,7 @@ import (
 	"github.com/pixality-inc/golang-core/json"
 
 	"stagen/pkg/html_preprocessor"
+	"stagen/pkg/html_tokenizer"
 	"stagen/pkg/markdown"
 	"stagen/pkg/template_engine"
 )
@@ -58,36 +59,46 @@ func NewTheme(
 		},
 	)
 
+	macroWrapper := func(
+		macroName string,
+		uniqueName string,
+		attributes map[string]any,
+	) (*html_preprocessor.MacroWrapperResult, error) {
+		jsonAttributes, err := json.Marshal(attributes)
+		if err != nil {
+			return nil, err
+		}
+
+		wrapperResult := &html_preprocessor.MacroWrapperResult{
+			Before: fmt.Appendf(nil, `{{ define %s }}`, strconv.Quote(uniqueName)),
+			After:  []byte(`{{ end }}`),
+			Call: fmt.Appendf(
+				nil,
+				`{{ macro %s %s (%s|json_parse) }}`,
+				strconv.Quote(macroName),
+				strconv.Quote(uniqueName),
+				strconv.Quote(string(jsonAttributes)),
+			),
+		}
+
+		return wrapperResult, nil
+	}
+
+	withoutClosingTags := make([]string, 0, len(html_tokenizer.WithoutClosingTags))
+	copy(withoutClosingTags, html_tokenizer.WithoutClosingTags)
+	withoutClosingTags = append(withoutClosingTags, "no")
+
 	return &ThemeImpl{
 		name:     name,
 		path:     path,
 		config:   config,
 		loader:   templateLoader,
 		markdown: markdown.New(),
-		htmlPreprocessor: html_preprocessor.New(func(
-			macroName string,
-			uniqueName string,
-			attributes map[string]any,
-		) (*html_preprocessor.MacroWrapperResult, error) {
-			jsonAttributes, err := json.Marshal(attributes)
-			if err != nil {
-				return nil, err
-			}
-
-			wrapperResult := &html_preprocessor.MacroWrapperResult{
-				Before: fmt.Appendf(nil, `{{ define %s }}`, strconv.Quote(uniqueName)),
-				After:  []byte(`{{ end }}`),
-				Call: fmt.Appendf(
-					nil,
-					`{{ macro %s %s (%s|json_parse) }}`,
-					strconv.Quote(macroName),
-					strconv.Quote(uniqueName),
-					strconv.Quote(string(jsonAttributes)),
-				),
-			}
-
-			return wrapperResult, nil
-		}),
+		htmlPreprocessor: html_preprocessor.New(
+			macroWrapper,
+			withoutClosingTags,
+			html_preprocessor.AttributesWithoutValue,
+		),
 	}
 }
 
@@ -123,6 +134,9 @@ func (t *ThemeImpl) Render(
 			},
 			"markdown": func(text string) (string, error) {
 				return t.renderMarkdown(ctx, text)
+			},
+			"includes": func(includes []SiteConfigTemplateInclude) (string, error) {
+				return t.includes(ctx, templateEngine, data, includes)
 			},
 		},
 	)
@@ -203,4 +217,24 @@ func (t *ThemeImpl) renderMarkdown(
 	}
 
 	return string(markdownResult), nil
+}
+
+func (t *ThemeImpl) includes(
+	ctx context.Context,
+	templateEngine template_engine.TemplateEngine,
+	data any,
+	includes []SiteConfigTemplateInclude,
+) (string, error) {
+	var results []byte
+
+	for _, includeValue := range includes {
+		includeResult, err := templateEngine.Include(ctx, includeValue.Name(), data)
+		if err != nil {
+			return "", fmt.Errorf("failed to include '%s': %w", includeValue.Name(), err)
+		}
+
+		results = append(results, includeResult...)
+	}
+
+	return string(results), nil
 }

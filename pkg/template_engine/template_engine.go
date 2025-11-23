@@ -30,11 +30,11 @@ type Impl struct {
 	log                    logger.Loggable
 	name                   string
 	loader                 Loader
-	extraTemplateFunctions textTemplate.FuncMap
+	format                 TemplateFormat
 	template               Template
+	extraTemplateFunctions textTemplate.FuncMap
 	context                context.Context // nolint:containedctx
 	data                   any
-	initialized            bool
 	imported               map[string]struct{}
 	mutex                  sync.Mutex
 }
@@ -53,20 +53,9 @@ func NewWithExtraTemplateFunctions(
 	loader Loader,
 	extraTemplateFunctions textTemplate.FuncMap,
 ) *Impl {
-	var template Template
+	tmpl := newTemplate(format, name)
 
-	switch format {
-	case TemplateFormatText:
-		template = NewTextTemplate(name)
-
-	case TemplateFormatHtml:
-		template = NewHtmlTemplate(name)
-
-	default:
-		panic(fmt.Errorf("%w: %s", ErrUnknownTemplateFormat, format))
-	}
-
-	return &Impl{
+	impl := &Impl{
 		log: logger.NewLoggableImplWithServiceAndFields(
 			"template_engine",
 			logger.Fields{
@@ -75,27 +64,25 @@ func NewWithExtraTemplateFunctions(
 		),
 		name:                   name,
 		loader:                 loader,
+		format:                 format,
+		template:               tmpl,
 		extraTemplateFunctions: extraTemplateFunctions,
-		template:               template,
 		context:                nil,
 		data:                   nil,
-		initialized:            false,
 		imported:               make(map[string]struct{}),
 		mutex:                  sync.Mutex{},
 	}
+
+	impl.addFuncs(tmpl)
+
+	return impl
 }
 
 func (e *Impl) HasBlocks(ctx context.Context, content string) (bool, error) {
-	if err := e.init(ctx); err != nil {
-		return false, fmt.Errorf("init: %w", err)
-	}
+	tmpl := newTemplate(e.format, e.name)
+	e.addFuncs(tmpl)
 
-	tmpl, err := e.template.Clone()
-	if err != nil {
-		return false, fmt.Errorf("clone template: %w", err)
-	}
-
-	if err = tmpl.Parse(content); err != nil {
+	if err := tmpl.Parse(content); err != nil {
 		return false, fmt.Errorf("parse template content: %w", err)
 	}
 
@@ -107,9 +94,8 @@ func (e *Impl) HasBlocks(ctx context.Context, content string) (bool, error) {
 }
 
 func (e *Impl) Execute(ctx context.Context, layout string, content string, data any) ([]byte, error) {
-	if err := e.init(ctx); err != nil {
-		return nil, fmt.Errorf("init: %w", err)
-	}
+	e.context = ctx
+	e.addFuncs(e.template)
 
 	e.data = data
 
@@ -218,21 +204,20 @@ func (e *Impl) Include(ctx context.Context, name string, data any) ([]byte, erro
 	return result, nil
 }
 
-func (e *Impl) init(ctx context.Context) error {
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
-
-	if e.initialized {
-		return nil
-	}
-
-	e.context = ctx
-
-	e.template.Funcs(textTemplate.FuncMap{
+func (e *Impl) addFuncs(tmpl Template) {
+	tmpl.Funcs(textTemplate.FuncMap{
 		"dict":       e.dict,
 		"json_parse": e.jsonParse,
-		"import": func(path string) (string, error) {
-			result, err := e.Import(e.context, LoadTypeImport, path, true)
+		"extends": func(name string) (string, error) {
+			result, err := e.Import(e.context, LoadTypeLayout, name, true)
+			if err != nil {
+				return "", err
+			}
+
+			return string(result), nil
+		},
+		"import": func(name string) (string, error) {
+			result, err := e.Import(e.context, LoadTypeImport, name, true)
 			if err != nil {
 				return "", err
 			}
@@ -244,11 +229,7 @@ func (e *Impl) init(ctx context.Context) error {
 		"macro":   e.macro,
 	})
 
-	e.template.Funcs(e.extraTemplateFunctions)
-
-	e.initialized = true
-
-	return nil
+	tmpl.Funcs(e.extraTemplateFunctions)
 }
 
 func (e *Impl) jsonParse(value string) (any, error) {
@@ -312,4 +293,21 @@ func (e *Impl) macro(name string, uniqueName string, data map[string]any) (strin
 	}
 
 	return string(macroResult), nil
+}
+
+func newTemplate(format TemplateFormat, name string) Template {
+	var template Template
+
+	switch format {
+	case TemplateFormatText:
+		template = NewTextTemplate(name)
+
+	case TemplateFormatHtml:
+		template = NewHtmlTemplate(name)
+
+	default:
+		panic(fmt.Errorf("%w: %s", ErrUnknownTemplateFormat, format))
+	}
+
+	return template
 }

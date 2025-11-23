@@ -22,3 +22,7 @@ test:
 .PHONY: build
 build:
 	go build -o stagen ./cmd/stagen/stagen.go
+
+.PHONY: web
+web:
+	python3 -m http.server -d example/build 8001

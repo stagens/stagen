@@ -132,7 +132,8 @@ type SiteConfigTemplateInclude interface {
 //
 //nolint:iface
 type SiteConfigTemplateExtra interface {
-	Name() string
+	Url() string
+	Options() map[string]any
 }
 
 type SiteConfigTemplate interface {

@@ -13,7 +13,7 @@ var (
 type LoadType string
 
 const (
-	LoadTypeLayout  LoadType = "extends"
+	LoadTypeLayout  LoadType = "layout"
 	LoadTypeImport  LoadType = "import"
 	LoadTypeInclude LoadType = "include"
 )

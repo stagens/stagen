@@ -1,0 +1,9 @@
+{{- define "head_after" }}
+{% for js in extras.js %}
+{% set url = js %}
+    {% if url.endsWith(".js") %}
+        {% do url = url + "?" + gen_time %}
+    {% endif %}
+<script src="{{ url }}" async></script>
+{% endfor %}
+{{ end }}

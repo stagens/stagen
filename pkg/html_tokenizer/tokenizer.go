@@ -5,18 +5,27 @@ import (
 	"io"
 )
 
+var WithoutClosingTags = []string{"meta", "br", "hr", "img", "input", "link"}
+
 type Tokenizer interface {
 	Tokenize(ctx context.Context, reader io.Reader) ([]Token, error)
 }
 
-type Impl struct{}
-
-func NewTokenizer() Tokenizer {
-	return &Impl{}
+type Impl struct {
+	withoutClosingTags []string
 }
 
-func (t *Impl) Tokenize(ctx context.Context, reader io.Reader) ([]Token, error) {
-	state := NewState(reader)
+func NewTokenizer(withoutClosingTags []string) Tokenizer {
+	return &Impl{
+		withoutClosingTags: withoutClosingTags,
+	}
+}
+
+func (t *Impl) Tokenize(
+	ctx context.Context,
+	reader io.Reader,
+) ([]Token, error) {
+	state := NewState(reader, t.withoutClosingTags)
 
 	for {
 		ok, err := state.Next(ctx)

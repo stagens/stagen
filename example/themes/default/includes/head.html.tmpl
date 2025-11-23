@@ -1,0 +1,9 @@
+{{- define "head" }}
+<meta charset="utf-8"/>
+<meta name="description" content="{{ if .Page.meta_description }}{{ .Page.meta_description }}{{ else }}{{ .Site.description }}{{ end }}">
+<meta name="keywords" content="{{ .Page.meta_keywords }}">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>{{ .Page.Title }}</title>
+{{ end -}}

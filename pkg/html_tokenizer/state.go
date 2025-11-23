@@ -15,26 +15,26 @@ var (
 	ErrUnexpectedTokenType = errors.New("unexpected token type")
 )
 
-var withoutClosingTags = []string{"meta", "br", "hr", "img", "input", "link"}
-
 type Position struct {
 	depth int
 }
 
 type State struct {
-	tokens        []Token
-	reader        io.Reader
-	htmlTokenizer *html.Tokenizer
-	position      Position
-	nextTokenBuf  *HtmlToken
+	withoutClosingTags []string
+	tokens             []Token
+	reader             io.Reader
+	htmlTokenizer      *html.Tokenizer
+	position           Position
+	nextTokenBuf       *HtmlToken
 }
 
-func NewState(reader io.Reader) *State {
+func NewState(reader io.Reader, withoutClosingTags []string) *State {
 	return &State{
-		tokens:        []Token{},
-		reader:        reader,
-		htmlTokenizer: html.NewTokenizer(reader),
-		position:      Position{depth: 0},
+		withoutClosingTags: withoutClosingTags,
+		tokens:             []Token{},
+		reader:             reader,
+		htmlTokenizer:      html.NewTokenizer(reader),
+		position:           Position{depth: 0},
 	}
 }
 
@@ -148,9 +148,13 @@ func (s *State) parseTagToken(ctx context.Context, token *HtmlToken) (Token, err
 
 	children := make([]Token, 0)
 
+	selfClosing := false
+
 	for {
 		//nolint:staticcheck // @todo
-		if slices.Contains(withoutClosingTags, token.Token.Data) {
+		if slices.Contains(s.withoutClosingTags, token.Token.Data) {
+			selfClosing = true
+
 			break
 		}
 
@@ -182,9 +186,11 @@ func (s *State) parseTagToken(ctx context.Context, token *HtmlToken) (Token, err
 			s.nextTokenBuf = endToken
 			endToken = nil
 		}
+
+		selfClosing = false
 	}
 
-	result := NewTagToken(token, position, endToken, false, children)
+	result := NewTagToken(token, position, endToken, selfClosing, children)
 
 	return result, nil
 }

@@ -7,22 +7,30 @@ import (
 	"stagen/pkg/html_tokenizer"
 )
 
+var AttributesWithoutValue = []string{"checked", "required", "crossorigin"}
+
 type HtmlPreprocessor interface {
 	Preprocess(ctx context.Context, content []byte) ([]byte, []byte, error)
 	Postprocess(ctx context.Context, content []byte) ([]byte, error)
 }
 
 type Impl struct {
-	htmlTokenizer html_tokenizer.Tokenizer
-	increment     int
-	macroWrapper  MacroWrapper
+	htmlTokenizer          html_tokenizer.Tokenizer
+	increment              int
+	macroWrapper           MacroWrapper
+	attributesWithoutValue []string
 }
 
-func New(macroWrapper MacroWrapper) *Impl {
+func New(
+	macroWrapper MacroWrapper,
+	withoutClosingTags []string,
+	attributesWithoutValue []string,
+) *Impl {
 	return &Impl{
-		htmlTokenizer: html_tokenizer.NewTokenizer(),
-		increment:     0,
-		macroWrapper:  macroWrapper,
+		htmlTokenizer:          html_tokenizer.NewTokenizer(withoutClosingTags),
+		increment:              0,
+		macroWrapper:           macroWrapper,
+		attributesWithoutValue: attributesWithoutValue,
 	}
 }
 

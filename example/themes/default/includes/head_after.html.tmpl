@@ -1,0 +1,23 @@
+{{- define "head_after" }}
+  {{- range .Page.Extras.preconnect_links }}
+    {{- if .Options.crossorigin }}
+      <link rel="preconnect" href="{{ .Url }}" crossorigin>
+    {{- else }}
+      <link rel="preconnect" href="{{ .Url }}">
+    {{ end -}}
+  {{ end -}}
+  {{/*{% for link in extras.preconnect_links %}*/}}
+  {{/*    {% if link.crossorigin %}*/}}
+  {{/*        <link rel="preconnect" href="{{ link.url }}" crossorigin>*/}}
+  {{/*    {% else %}*/}}
+  {{/*        <link rel="preconnect" href="{{ link.url }}">*/}}
+  {{/*    {% endif %}*/}}
+  {{/*{% endfor %}*/}}
+  {{/*{% for css in extras.css %}*/}}
+  {{/*    {% set url = css %}*/}}
+  {{/*    {% if url.endsWith(".css") %}*/}}
+  {{/*        {% do url = url + "?" + gen_time %}*/}}
+  {{/*    {% endif %}*/}}
+  {{/*    <link rel="stylesheet" href="{{ url }}">*/}}
+  {{/*{% endfor %}*/}}
+{{ end -}}

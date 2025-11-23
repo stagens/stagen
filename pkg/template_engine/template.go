@@ -4,6 +4,7 @@ import (
 	"errors"
 	"html/template"
 	"io"
+	"text/template/parse"
 )
 
 var ErrUnknownTemplateFormat = errors.New("unknown template format")
@@ -27,5 +28,5 @@ type Template interface {
 	Parse(content string) error
 	Templates() []BasicTemplate
 	Funcs(functions template.FuncMap)
-	Clone() (Template, error)
+	ParseTree() *parse.Tree
 }

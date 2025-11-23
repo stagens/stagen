@@ -210,6 +210,9 @@ func (s *Impl) getTemplateData(
 			"AccessedAt": pageFileInfo.AccessedAt,
 			"ChangedAt":  pageFileInfo.ChangedAt,
 			"Variables":  pageConfig.Variables(),
+			"Imports":    pageConfig.Imports(),
+			"Includes":   pageConfig.Includes(),
+			"Extras":     pageConfig.Extras(),
 		},
 		"System": map[string]any{
 			"BuildTime": s.buildTime,

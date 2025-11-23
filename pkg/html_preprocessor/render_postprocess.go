@@ -2,6 +2,7 @@ package html_preprocessor
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -43,12 +44,14 @@ func (p *Impl) renderPostprocessToken(token html_tokenizer.Token) ([]byte, error
 
 		result := make([]byte, 0)
 
-		attributes := make([]string, 0)
+		attributes := make([]string, 0, len(tok.Token().Attr))
 
 		for _, attr := range tok.Token().Attr {
-			attribute := attr.Key + "=" + strconv.Quote(attr.Val)
-
-			attributes = append(attributes, attribute)
+			if slices.Contains(p.attributesWithoutValue, attr.Key) && attr.Val == "" {
+				attributes = append(attributes, attr.Key)
+			} else {
+				attributes = append(attributes, attr.Key+"="+strconv.Quote(attr.Val))
+			}
 		}
 
 		result = append(result, '<')
