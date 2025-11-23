@@ -1,0 +1,39 @@
+---
+agg_dicts:
+  - name: date
+    variable: date
+  - name: blog
+    variable: blog
+    sort_by:
+      variable: date
+      direction: desc
+  - name: featured
+    variable: featured
+    sort_by:
+      variable: date
+      direction: desc
+  - name: blog_category
+    variable: blog_category
+  - name: blog_tags
+    variable: blog_tags
+generators:
+  - name: blog_categories
+    dest_dir: blog/category
+    template: blog/gen/blog_category_gen
+    source:
+      type: agg_dict
+      name: blog_category
+  - name: blog_tags
+    dest_dir: blog/tags
+    template: blog/gen/blog_tag_gen
+    source:
+      type: agg_dict
+      name: blog_tags
+#  - name: blog_tags
+#    dest_dir: blog/tags
+#    template: blog/gen/blog_tags_gen
+#    source:
+#      type: database
+#      name: blog_tags
+extra_css:
+  - /css/blog.css

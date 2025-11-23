@@ -50,6 +50,7 @@ func (s *Impl) getBasePageConfig() PageConfig {
 	templateConfig := s.siteConfig.Template()
 
 	var pageConfig PageConfig = NewPageConfig(
+		"base",
 		templateConfig.Theme(),
 		templateConfig.DefaultLayout(),
 		"",

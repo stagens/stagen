@@ -54,8 +54,10 @@ func (p *Impl) renderPostprocessToken(token html_tokenizer.Token) ([]byte, error
 			}
 		}
 
+		tag := tok.Tag()
+
 		result = append(result, '<')
-		result = append(result, []byte(tok.Tag())...)
+		result = append(result, []byte(tag)...)
 
 		if len(attributes) > 0 {
 			result = append(result, ' ')
@@ -68,7 +70,7 @@ func (p *Impl) renderPostprocessToken(token html_tokenizer.Token) ([]byte, error
 			result = append(result, '>')
 		}
 
-		if !tok.SelfClosing() {
+		if !tok.SelfClosing() || tok.AddClosing() {
 			childrenResult, err := p.renderPostprocessTokens(tok.Children())
 			if err != nil {
 				return nil, err
@@ -122,6 +124,7 @@ func (p *Impl) postprocessBlockquote(token *html_tokenizer.TagToken) (*html_toke
 			details.Position(),
 			nil,
 			details.SelfClosing(),
+			details.AddClosing(),
 			newDetailsChildren,
 		)
 
@@ -135,6 +138,7 @@ func (p *Impl) postprocessBlockquote(token *html_tokenizer.TagToken) (*html_toke
 		token.Position(),
 		nil,
 		token.SelfClosing(),
+		token.AddClosing(),
 		newChildren,
 	)
 

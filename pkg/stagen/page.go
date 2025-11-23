@@ -39,7 +39,7 @@ type PageImpl struct {
 	uri          string
 	fileInfo     *PageFileInfo
 	content      []byte
-	dirConfigs   []DirConfig
+	dirConfigs   []PageConfig
 	config       PageConfig
 	mergedConfig PageConfig
 	mutex        sync.Mutex
@@ -51,7 +51,7 @@ func NewPage(
 	uri string,
 	fileInfo *PageFileInfo,
 	content []byte,
-	dirConfigs []DirConfig,
+	dirConfigs []PageConfig,
 	config PageConfig,
 ) *PageImpl {
 	return &PageImpl{
@@ -91,7 +91,7 @@ func (p *PageImpl) Config() PageConfig {
 		return p.mergedConfig
 	}
 
-	var pageConfig PageConfig = NewDefaultPageConfig(nil)
+	var pageConfig PageConfig = NewDefaultPageConfig("empty", nil)
 
 	for _, dirConfig := range p.dirConfigs {
 		pageConfig = MergePageConfigs(pageConfig, dirConfig)

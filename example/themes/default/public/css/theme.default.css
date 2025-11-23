@@ -909,4 +909,56 @@ details[data-callout="danger"] summary::before {
     color: inherit;
 }
 
+/*** [ SPECIAL ] **********************************************************************************************************/
+
+no {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  padding: 2px 6px;
+  border-radius: 4px;
+
+  background: #ffecec;
+  border: 1px solid #ff6b6b;
+
+  font-size: 12px;
+  color: #b30000;
+
+  transform: translateY(-2px);
+}
+
+no::before {
+  content: "⚠️";
+  font-size: 12px;
+  line-height: 1;
+}
+
+no::after {
+  content: "NO TEMPLATE VARIABLE";
+  font-size: 12px;
+  line-height: 1;
+}
+
+todo {
+  display: block;
+
+  padding: 2px 6px;
+  border-radius: 4px;
+
+  background: #ffecec;
+  border: 1px solid #ff6b6b;
+
+  font-size: 12px;
+  color: #b30000;
+
+  transform: translateY(-2px);
+}
+
+todo::before {
+  content: "⚠️TODO ";
+  font-size: 12px;
+  line-height: 1;
+}
+
 /*** [ END ] **********************************************************************************************************/

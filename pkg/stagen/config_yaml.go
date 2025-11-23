@@ -120,6 +120,77 @@ func (c *SiteExtensionConfigYaml) Name() string {
 	return c.NameValue
 }
 
+type ExtensionConfigAuthorYaml struct {
+	NameValue    string `yaml:"name"`
+	EmailValue   string `yaml:"email"`
+	WebsiteValue string `yaml:"website"`
+}
+
+func (c *ExtensionConfigAuthorYaml) Name() string {
+	return c.NameValue
+}
+
+func (c *ExtensionConfigAuthorYaml) Email() string {
+	return c.EmailValue
+}
+
+func (c *ExtensionConfigAuthorYaml) Website() string {
+	return c.WebsiteValue
+}
+
+type ExtensionConfigYaml struct {
+	NameValue      string                                      `yaml:"name"`
+	TitleValue     string                                      `yaml:"title"`
+	AuthorValue    ExtensionConfigAuthorYaml                   `yaml:"author"`
+	VariablesValue map[string]any                              `yaml:"variables"`
+	ImportsValue   map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
+	IncludesValue  map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
+	ExtrasValue    map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
+}
+
+func (c *ExtensionConfigYaml) Name() string {
+	return c.NameValue
+}
+
+func (c *ExtensionConfigYaml) Title() string {
+	return c.TitleValue
+}
+
+func (c *ExtensionConfigYaml) Author() ExtensionAuthor {
+	return &c.AuthorValue
+}
+
+func (c *ExtensionConfigYaml) Variables() map[string]any {
+	return c.VariablesValue
+}
+
+func (c *ExtensionConfigYaml) Imports() map[string][]SiteConfigTemplateImport {
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateImportYaml, SiteConfigTemplateImport](c.ImportsValue)
+}
+
+func (c *ExtensionConfigYaml) Includes() map[string][]SiteConfigTemplateInclude {
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue)
+}
+
+func (c *ExtensionConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
+	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
+}
+
+func (c *ExtensionConfigYaml) ToPageConfig() PageConfig {
+	return NewPageConfig(
+		"extension:"+c.Name(),
+		"",
+		"",
+		"",
+		false,
+		false,
+		c.Variables(),
+		c.Imports(),
+		c.Includes(),
+		c.Extras(),
+	)
+}
+
 type SiteAggDictConfigYaml struct {
 	NameValue string `yaml:"name"`
 }
@@ -212,6 +283,7 @@ func (c *ThemeConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
 
 func (c *ThemeConfigYaml) ToPageConfig() PageConfig {
 	return NewPageConfig(
+		"theme:"+c.Name(),
 		c.Name(),
 		c.DefaultLayout(),
 		"",
@@ -273,15 +345,17 @@ func (c *ConfigYaml) TemplatesDir() string {
 }
 
 type SiteConfigYaml struct {
-	BaseUrlValue    string                     `env:"BASE_URL"         env-default:"http://127.0.0.1:8080" yaml:"base_url"`
-	NameValue       string                     `env:"NAME"             env-default:"My Cool Website"       yaml:"name"`
-	AuthorValue     SiteConfigAuthorYaml       `env-prefix:"AUTHOR"    yaml:"author"`
-	LogoValue       SiteConfigLogoYaml         `env-prefix:"LOGO"      yaml:"logo"`
-	CopyrightValue  SiteConfigCopyrightYaml    `env-prefix:"COPYRIGHT" yaml:"copyright"`
-	ExtensionsValue []*SiteExtensionConfigYaml `yaml:"extensions"`
-	AggDictsValue   []*SiteAggDictConfigYaml   `yaml:"agg_dicts"`
-	GeneratorsValue []*SiteGeneratorConfigYaml `yaml:"generators"`
-	TemplateValue   SiteConfigTemplateYaml     `env-prefix:"TEMPLATE"  yaml:"template"`
+	BaseUrlValue     string                     `env:"BASE_URL"         env-default:"http://127.0.0.1:8080"       yaml:"base_url"`
+	NameValue        string                     `env:"NAME"             env-default:"My Cool Website"             yaml:"name"`
+	DescriptionValue string                     `env:"DESCRIPTION"      env-default:"My Cool Website Description" yaml:"description"`
+	LangValue        string                     `env:"LANG"             env-default:"en"                          yaml:"lang"`
+	AuthorValue      SiteConfigAuthorYaml       `env-prefix:"AUTHOR"    yaml:"author"`
+	LogoValue        SiteConfigLogoYaml         `env-prefix:"LOGO"      yaml:"logo"`
+	CopyrightValue   SiteConfigCopyrightYaml    `env-prefix:"COPYRIGHT" yaml:"copyright"`
+	ExtensionsValue  []*SiteExtensionConfigYaml `yaml:"extensions"`
+	AggDictsValue    []*SiteAggDictConfigYaml   `yaml:"agg_dicts"`
+	GeneratorsValue  []*SiteGeneratorConfigYaml `yaml:"generators"`
+	TemplateValue    SiteConfigTemplateYaml     `env-prefix:"TEMPLATE"  yaml:"template"`
 }
 
 func (c *SiteConfigYaml) BaseUrl() string {
@@ -290,6 +364,14 @@ func (c *SiteConfigYaml) BaseUrl() string {
 
 func (c *SiteConfigYaml) Name() string {
 	return c.NameValue
+}
+
+func (c *SiteConfigYaml) Description() string {
+	return c.DescriptionValue
+}
+
+func (c *SiteConfigYaml) Lang() string {
+	return c.LangValue
 }
 
 func (c *SiteConfigYaml) Author() SiteConfigAuthor {
@@ -368,6 +450,23 @@ func (c *DirConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
 	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
 }
 
+func (c *DirConfigYaml) ToPageConfig(dir string) PageConfig {
+	pageConfig := NewPageConfig(
+		"dir:"+dir,
+		c.ThemeValue,
+		c.LayoutValue,
+		c.TitleValue,
+		c.IsHiddenValue,
+		c.isDraftValue,
+		c.VariablesValue,
+		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateImportYaml, SiteConfigTemplateImport](c.ImportsValue),
+		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue),
+		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue),
+	)
+
+	return pageConfig
+}
+
 type PageConfigYaml struct {
 	ThemeValue    string                                      `yaml:"theme"`
 	LayoutValue   string                                      `yaml:"layout"`
@@ -381,6 +480,7 @@ type PageConfigYaml struct {
 
 func (c *PageConfigYaml) ToPageConfig(variables map[string]any) PageConfig {
 	pageConfig := NewPageConfig(
+		"page",
 		c.ThemeValue,
 		c.LayoutValue,
 		c.TitleValue,

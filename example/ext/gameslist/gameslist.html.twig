@@ -1,0 +1,56 @@
+{% macro GamesListGenres(genres) %}
+    {% if genres.length > 0 %}
+        <div class="info-genres">
+            <ul>
+                {% for _, genre in genres %}
+                    <li>{{ genre }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endmacro %}
+{% macro GamesListRating(x) %}
+{% if x > 0 && x <= 5 %}
+<div class="info-rating" title="{{ x }} из 5">
+    {% if x == 1 %}
+    💩⚪⚪⚪⚪
+    {% elif x == 2 %}
+    🔴🔴⚪⚪⚪
+    {% elif x == 3 %}
+    🟡🟡🟡⚪⚪
+    {% elif x == 4 %}
+    🟢🟢🟢🟢⚪
+    {% elif x == 5 %}
+    🟢🟢🟢🟢🟢
+    {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+{% macro GamesListTable(db) %}
+    <div class="gameslist">
+        <div class="items">
+            {% for item in db.data %}
+                <div class="item">
+                    <a href="{{ item.url }}" target="_blank">
+                        <img src="{{ item.image }}" alt="{{ item.title }}"/>
+                    </a>
+                    <div class="info">
+                        <div class="info-title">
+                            <a id="game-{{ item.id }}" href="#game-{{ item.id }}">
+                                #
+                            </a>
+                            <a href="{{ item.url }}" target="_blank">
+                                {{ item.title }}
+                            </a>
+                        </div>
+                        <div class="info-year">
+                            {{ item.year }}
+                        </div>
+                        {{ GamesListGenres(item.genres) }}
+                        {{ GamesListRating(item.rating) }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endmacro %}

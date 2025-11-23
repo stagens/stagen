@@ -20,6 +20,7 @@ type Position struct {
 }
 
 type State struct {
+	addClosingTags     []string
 	withoutClosingTags []string
 	tokens             []Token
 	reader             io.Reader
@@ -28,8 +29,9 @@ type State struct {
 	nextTokenBuf       *HtmlToken
 }
 
-func NewState(reader io.Reader, withoutClosingTags []string) *State {
+func NewState(reader io.Reader, addClosingTags []string, withoutClosingTags []string) *State {
 	return &State{
+		addClosingTags:     addClosingTags,
 		withoutClosingTags: withoutClosingTags,
 		tokens:             []Token{},
 		reader:             reader,
@@ -149,8 +151,16 @@ func (s *State) parseTagToken(ctx context.Context, token *HtmlToken) (Token, err
 	children := make([]Token, 0)
 
 	selfClosing := false
+	addClosing := false
 
 	for {
+		//nolint:staticcheck // @todo
+		if slices.Contains(s.addClosingTags, token.Token.Data) {
+			addClosing = true
+
+			break
+		}
+
 		//nolint:staticcheck // @todo
 		if slices.Contains(s.withoutClosingTags, token.Token.Data) {
 			selfClosing = true
@@ -188,15 +198,16 @@ func (s *State) parseTagToken(ctx context.Context, token *HtmlToken) (Token, err
 		}
 
 		selfClosing = false
+		addClosing = false
 	}
 
-	result := NewTagToken(token, position, endToken, selfClosing, children)
+	result := NewTagToken(token, position, endToken, selfClosing, addClosing, children)
 
 	return result, nil
 }
 
 func (s *State) parseSelfClosingTagToken(_ context.Context, token *HtmlToken) (Token, error) {
-	result := NewTagToken(token, s.position, nil, true, nil)
+	result := NewTagToken(token, s.position, nil, true, false, nil)
 
 	return result, nil
 }

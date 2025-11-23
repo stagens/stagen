@@ -211,6 +211,7 @@ func (e *Impl) addFuncs(tmpl Template) {
 		"json_parse": e.jsonParse,
 		"has_prefix": strings.HasPrefix,
 		"has_suffix": strings.HasSuffix,
+		"split":      strings.Split,
 		"extends": func(name string) (string, error) {
 			result, err := e.Import(e.context, LoadTypeLayout, name, true)
 			if err != nil {

@@ -1,7 +1,7 @@
 package stagen
 
 import (
-	"maps"
+	"fmt"
 
 	"github.com/pixality-inc/golang-core/json"
 )
@@ -40,7 +40,6 @@ type SiteConfigCopyright interface {
 //nolint:iface
 type SiteExtensionConfig interface {
 	Name() string
-	ToPageConfig() PageConfig
 }
 
 // SiteAggDictConfig
@@ -63,13 +62,6 @@ type DatabaseConfig interface {
 }
 
 //nolint:iface
-type ExtensionAuthor interface {
-	Name() string
-	Email() string
-	Website() string
-}
-
-//nolint:iface
 type ThemeAuthor interface {
 	Name() string
 	Email() string
@@ -89,6 +81,24 @@ type ThemeConfig interface {
 }
 
 //nolint:iface
+type ExtensionAuthor interface {
+	Name() string
+	Email() string
+	Website() string
+}
+
+type ExtensionConfig interface {
+	Name() string
+	Title() string
+	Author() ExtensionAuthor
+	Variables() map[string]any
+	Imports() map[string][]SiteConfigTemplateImport
+	Includes() map[string][]SiteConfigTemplateInclude
+	Extras() map[string][]SiteConfigTemplateExtra
+	ToPageConfig() PageConfig
+}
+
+//nolint:iface
 type DirConfig interface {
 	Theme() string
 	Layout() string
@@ -99,10 +109,12 @@ type DirConfig interface {
 	Imports() map[string][]SiteConfigTemplateImport
 	Includes() map[string][]SiteConfigTemplateInclude
 	Extras() map[string][]SiteConfigTemplateExtra
+	ToPageConfig(dir string) PageConfig
 }
 
 //nolint:iface
 type PageConfig interface {
+	ConfigSource() string
 	Theme() string
 	Layout() string
 	Title() string
@@ -148,6 +160,8 @@ type SiteConfigTemplate interface {
 type SiteConfig interface {
 	BaseUrl() string
 	Name() string
+	Description() string
+	Lang() string
 	Author() SiteConfigAuthor
 	Logo() SiteConfigLogo
 	Copyright() SiteConfigCopyright
@@ -158,19 +172,21 @@ type SiteConfig interface {
 }
 
 type PageConfigImpl struct {
-	theme     string
-	layout    string
-	title     string
-	isHidden  bool
-	isDraft   bool
-	variables map[string]any
-	imports   map[string][]SiteConfigTemplateImport
-	includes  map[string][]SiteConfigTemplateInclude
-	extras    map[string][]SiteConfigTemplateExtra
+	configSource string
+	theme        string
+	layout       string
+	title        string
+	isHidden     bool
+	isDraft      bool
+	variables    map[string]any
+	imports      map[string][]SiteConfigTemplateImport
+	includes     map[string][]SiteConfigTemplateInclude
+	extras       map[string][]SiteConfigTemplateExtra
 }
 
-func NewDefaultPageConfig(variables map[string]any) *PageConfigImpl {
+func NewDefaultPageConfig(configSource string, variables map[string]any) *PageConfigImpl {
 	return NewPageConfig(
+		configSource,
 		"",
 		"",
 		"",
@@ -184,6 +200,7 @@ func NewDefaultPageConfig(variables map[string]any) *PageConfigImpl {
 }
 
 func NewPageConfig(
+	configSource string,
 	theme string,
 	layout string,
 	title string,
@@ -211,16 +228,21 @@ func NewPageConfig(
 	}
 
 	return &PageConfigImpl{
-		theme:     theme,
-		layout:    layout,
-		title:     title,
-		isHidden:  isHidden,
-		isDraft:   isDraft,
-		variables: variables,
-		imports:   imports,
-		includes:  includes,
-		extras:    extras,
+		configSource: configSource,
+		theme:        theme,
+		layout:       layout,
+		title:        title,
+		isHidden:     isHidden,
+		isDraft:      isDraft,
+		variables:    variables,
+		imports:      imports,
+		includes:     includes,
+		extras:       extras,
 	}
+}
+
+func (p *PageConfigImpl) ConfigSource() string {
+	return p.configSource
 }
 
 func (p *PageConfigImpl) Theme() string {
@@ -286,18 +308,27 @@ func MergePageConfigs(cfg1 PageConfig, cfg2 PageConfig) PageConfig {
 	}
 
 	variables := cfg1.Variables()
-	maps.Copy(variables, cfg2.Variables())
+	for k, v := range cfg2.Variables() {
+		variables[k] = v // @todo modernize
+	}
 
 	imports := cfg1.Imports()
-	maps.Copy(imports, cfg2.Imports())
+	for k, v := range cfg2.Imports() {
+		imports[k] = append(imports[k], v...)
+	}
 
 	includes := cfg1.Includes()
-	maps.Copy(includes, cfg2.Includes())
+	for k, v := range cfg2.Includes() {
+		includes[k] = append(includes[k], v...)
+	}
 
 	extras := cfg1.Extras()
-	maps.Copy(extras, cfg2.Extras())
+	for k, v := range cfg2.Extras() {
+		extras[k] = append(extras[k], v...)
+	}
 
 	return NewPageConfig(
+		fmt.Sprintf("(merged %s :: %s)", cfg1.ConfigSource(), cfg2.ConfigSource()),
 		theme,
 		layout,
 		title,

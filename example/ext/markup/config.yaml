@@ -1,0 +1,13 @@
+---
+name: markup
+title: Markup
+author:
+  name: Denis Vidog
+  email: github@doubleds.ru
+  website: https://den4k.space
+imports:
+  imports:
+    - name: markup
+extras:
+  css:
+    - url: /css/markup.css

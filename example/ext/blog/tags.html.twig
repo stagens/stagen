@@ -1,0 +1,33 @@
+{% if !page.variables.blog_no_tags %}
+{% if page.variables.blog_tags && page.variables.blog_tags.length > 0 %}
+<div class="blog-tags">
+    <ul>
+        {% for _, tagKey in page.variables.blog_tags %}
+        {% set tag = undefined %}
+        {% for tag_object in databases.blog_tags.data %}
+            {% if tag_object.id == tagKey %}
+                {% do tag = tag_object %}
+                {% break %}
+            {% endif %}
+        {% endfor %}
+        {% if tag %}
+            <li class="tag-page">
+                <a href="{{ page_url('/blog/tags/' + tagKey) }}">
+                    {% if tag.emoji %}
+                        <span class="emoji">{{ tag.emoji }}</span>
+                    {% endif %}
+                    {{ tag.title.ru }}
+                </a>
+            </li>
+        {% else %}
+            <li class="tag-no-page">
+                <a href="{{ page_url('/blog/tags/' + tagKey) }}">
+                    {{ tagKey }}
+                </a>
+            </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endif %}

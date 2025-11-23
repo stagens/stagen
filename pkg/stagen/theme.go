@@ -84,9 +84,11 @@ func NewTheme(
 		return wrapperResult, nil
 	}
 
-	withoutClosingTags := make([]string, 0, len(html_tokenizer.WithoutClosingTags))
+	addClosingTags := []string{"no"}
+
+	withoutClosingTags := make([]string, 0, len(html_tokenizer.WithoutClosingTags)+len(addClosingTags))
 	copy(withoutClosingTags, html_tokenizer.WithoutClosingTags)
-	withoutClosingTags = append(withoutClosingTags, "no")
+	withoutClosingTags = append(withoutClosingTags, addClosingTags...)
 
 	return &ThemeImpl{
 		name:     name,
@@ -96,6 +98,7 @@ func NewTheme(
 		markdown: markdown.New(),
 		htmlPreprocessor: html_preprocessor.New(
 			macroWrapper,
+			addClosingTags,
 			withoutClosingTags,
 			html_preprocessor.AttributesWithoutValue,
 		),

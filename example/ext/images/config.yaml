@@ -1,0 +1,10 @@
+---
+name: images
+title: Images
+author:
+  name: Denis Vidog
+  email: github@doubleds.ru
+  website: https://den4k.space
+imports:
+  imports:
+    - name: images

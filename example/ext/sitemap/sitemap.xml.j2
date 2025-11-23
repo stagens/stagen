@@ -1,0 +1,10 @@
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+{% for _, p in pages %}
+{% if !p.is_hidden && !p.is_draft && p.uri != "/sitemap.xml" %}
+    <url>
+        <loc>{{ settings.site.base_url }}{{ p.uri }}</loc>
+        <lastmod>{{ date_format(p.mod_time) }}</lastmod>
+    </url>
+{% endif %}
+{% endfor %}
+</urlset>

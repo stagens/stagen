@@ -79,7 +79,7 @@ func (p *Impl) renderToken(token html_tokenizer.Token) (*TokenRenderResult, erro
 
 			result = result.Append(childrenResults)
 
-			if !tok.SelfClosing() {
+			if !tok.SelfClosing() || tok.AddClosing() {
 				result = result.AppendContent([]byte("</" + tok.Tag() + ">"))
 			}
 		}

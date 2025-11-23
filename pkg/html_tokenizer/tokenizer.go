@@ -12,11 +12,13 @@ type Tokenizer interface {
 }
 
 type Impl struct {
+	addClosingTags     []string
 	withoutClosingTags []string
 }
 
-func NewTokenizer(withoutClosingTags []string) Tokenizer {
+func NewTokenizer(addClosingTags []string, withoutClosingTags []string) Tokenizer {
 	return &Impl{
+		addClosingTags:     addClosingTags,
 		withoutClosingTags: withoutClosingTags,
 	}
 }
@@ -25,7 +27,7 @@ func (t *Impl) Tokenize(
 	ctx context.Context,
 	reader io.Reader,
 ) ([]Token, error) {
-	state := NewState(reader, t.withoutClosingTags)
+	state := NewState(reader, t.addClosingTags, t.withoutClosingTags)
 
 	for {
 		ok, err := state.Next(ctx)

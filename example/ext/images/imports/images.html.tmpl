@@ -1,0 +1,13 @@
+{{- define "macro:Image" }}
+{{ $url := .content }}
+{{ $caption := "" }}
+{{ $width := "auto" }}
+{{- if .caption }}{{ $caption = .caption }}{{ end -}}
+{{- if .width }}{{ $width = .width }}{{ end -}}
+<figure>
+  <img src="{{ $url }}" width="{{ $width }}" alt="{{ $caption }}" title="{{ $caption }}"/>
+  {{- if $caption }}
+  <figcaption>{{ $caption }}</figcaption>
+  {{ end -}}
+</figure>
+{{ end -}}

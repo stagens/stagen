@@ -1,0 +1,27 @@
+{% extends "blank" %}
+
+{% block main %}
+    <section class="card">
+        <h1>{{ page.title }}</h1>
+
+        {% if agg_dicts.blog %}
+            <ul>
+                {% for page_id in agg_dicts.blog.data.true %}
+                    {% set p = pages[page_id] %}
+                    {% if !p.is_hidden && !p.is_draft %}
+                    <li>
+                        <a href="{{ p.uri }}">
+                            {% if p.date %}
+                                {{ date_format(p.date, '%Y-%m-%d') }} –
+                            {% endif %}
+                            {{ p.title }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </section>
+{% endblock %}

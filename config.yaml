@@ -15,3 +15,8 @@ site:
     title: Stagen Developers
     year: 2025
     rights: All rights reserved.
+  extensions:
+    - name: images
+    - name: videos
+    - name: markup
+    - name: rss # @todo

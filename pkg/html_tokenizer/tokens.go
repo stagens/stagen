@@ -36,6 +36,7 @@ type TagToken struct {
 	tag         string
 	endToken    *HtmlToken
 	selfClosing bool
+	addClosing  bool
 	children    []Token
 }
 
@@ -44,6 +45,7 @@ func NewTagToken(
 	position Position,
 	endToken *HtmlToken,
 	selfClosing bool,
+	addClosing bool,
 	children []Token,
 ) *TagToken {
 	tagToken := &TagToken{
@@ -51,6 +53,7 @@ func NewTagToken(
 		tag:         string(token.Raw[1 : len(token.Token.Data)+1]),
 		endToken:    endToken,
 		selfClosing: selfClosing,
+		addClosing:  addClosing,
 		children:    nil,
 	}
 
@@ -73,6 +76,10 @@ func (t *TagToken) Children() []Token {
 
 func (t *TagToken) SelfClosing() bool {
 	return t.selfClosing
+}
+
+func (t *TagToken) AddClosing() bool {
+	return t.addClosing
 }
 
 type EndTagToken struct {

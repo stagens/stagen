@@ -1,0 +1,2 @@
+# Blog extension for stagen
+

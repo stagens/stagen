@@ -23,11 +23,12 @@ type Impl struct {
 
 func New(
 	macroWrapper MacroWrapper,
+	addClosingTags []string,
 	withoutClosingTags []string,
 	attributesWithoutValue []string,
 ) *Impl {
 	return &Impl{
-		htmlTokenizer:          html_tokenizer.NewTokenizer(withoutClosingTags),
+		htmlTokenizer:          html_tokenizer.NewTokenizer(addClosingTags, withoutClosingTags),
 		increment:              0,
 		macroWrapper:           macroWrapper,
 		attributesWithoutValue: attributesWithoutValue,

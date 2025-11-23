@@ -1,0 +1,37 @@
+{{- define "macro:VideoCaption" }}
+  {{ $caption := .content }}
+  <div class="video_caption">{{ $caption }}</div>
+{{ end -}}
+
+{{- define "macro:Video" }}
+  {{ $url := .content }}
+  {{ $caption := "" }}
+  {{- if .caption }}{{ $caption = .caption }}{{ end -}}
+  <div class="video">
+    This is a video url: <code>{{ $url }}</code>
+    {{- if $caption }}
+      <VideoCaption>{{ $caption }}</VideoCaption>
+    {{ end -}}
+  </div>
+{{ end -}}
+
+{{- define "macro:YouTube" }}
+  {{ $url := .content }}
+  {{ $caption := "" }}
+  {{- if .caption }}{{ $caption = .caption }}{{ end -}}
+  {{ $embedUrl := "https://www.youtube.com/embed/" }}
+  {{ $videoId := "" }}
+  {{- if has_prefix $url "https://youtu.be" }}
+    {{ $videoId = (index (split $url "/") 3) }}
+  {{ else }}
+    {{ $videoId = index (split (index (split (index (split $url "?") 1) "v=") 1) "&") 0 }}
+  {{ end -}}
+  <div class="video embed">
+    <iframe src="{{ $embedUrl }}{{ $videoId }}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    {{- if $caption }}
+      <VideoCaption>{{ $caption }}</VideoCaption>
+    {{ end -}}
+  </div>
+{{ end -}}

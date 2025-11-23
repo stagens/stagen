@@ -7,6 +7,14 @@ title: Index
 {{ import "test" }}
 
 {{- define "page_content" }}
+
+<Grid cols=2>
+  <Image>https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg</Image>
+  <YouTube>https://www.youtube.com/watch?v=Ah_uuTwGOYU</YouTube>
+</Grid>
+
+---
+
 # This is an index page
 - A = {{.a}}
 - Id = {{.Page.Id}}
@@ -14,8 +22,6 @@ title: Index
 - Title = {{.Page.Title}}
 - Uri = {{.Page.Uri}}
 - Url = {{.Page.Url}}
-
-<Image url="https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg" />
 
 {{ include "test" (dict "a" 100) }}
 {{ include "test" . }}

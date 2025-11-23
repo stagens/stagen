@@ -3,24 +3,27 @@ package stagen
 type Extension interface {
 	Name() string
 	Path() string
-	Config() SiteExtensionConfig
+	Config() ExtensionConfig
 }
 
 type ExtensionImpl struct {
-	name   string
-	path   string
-	config SiteExtensionConfig
+	name       string
+	path       string
+	siteConfig SiteExtensionConfig
+	config     ExtensionConfig
 }
 
 func NewExtension(
 	name string,
 	path string,
-	config SiteExtensionConfig,
+	siteConfig SiteExtensionConfig,
+	config ExtensionConfig,
 ) *ExtensionImpl {
 	return &ExtensionImpl{
-		name:   name,
-		path:   path,
-		config: config,
+		name:       name,
+		path:       path,
+		siteConfig: siteConfig,
+		config:     config,
 	}
 }
 
@@ -32,6 +35,6 @@ func (e *ExtensionImpl) Path() string {
 	return e.path
 }
 
-func (e *ExtensionImpl) Config() SiteExtensionConfig {
+func (e *ExtensionImpl) Config() ExtensionConfig {
 	return e.config
 }

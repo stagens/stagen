@@ -49,7 +49,7 @@ func (s *Impl) loadPages(ctx context.Context) error {
 func (s *Impl) loadPage(
 	ctx context.Context,
 	pageFilename string,
-	dirConfigs []DirConfig,
+	dirConfigs []PageConfig,
 ) error {
 	if pageFilename == "" {
 		return ErrNoName
@@ -86,7 +86,7 @@ func (s *Impl) addPage(
 	ctx context.Context,
 	pageFileInfo *PageFileInfo,
 	content []byte,
-	dirConfigs []DirConfig,
+	dirConfigs []PageConfig,
 ) error {
 	var (
 		err            error
@@ -113,7 +113,7 @@ func (s *Impl) addPage(
 	}
 
 	if pageConfigYaml == nil {
-		readPageConfig = NewDefaultPageConfig(pageVariables)
+		readPageConfig = NewDefaultPageConfig("empty", pageVariables)
 	} else {
 		readPageConfig = pageConfigYaml.ToPageConfig(pageVariables)
 	}
@@ -212,7 +212,11 @@ func (s *Impl) getPageFileInfo(pageFilename string) (*PageFileInfo, error) {
 	return pageFileInfo, nil
 }
 
-func (s *Impl) processPagesDirEntry(ctx context.Context, dirEntry filetree.Entry, dirConfigs []DirConfig) error {
+func (s *Impl) processPagesDirEntry(
+	ctx context.Context,
+	dirEntry filetree.Entry,
+	dirConfigs []PageConfig,
+) error {
 	dir := filepath.Join(dirEntry.Path(), dirEntry.Name())
 
 	entryDirConfigs, err := s.readDirConfigs(ctx, dir)
@@ -220,7 +224,7 @@ func (s *Impl) processPagesDirEntry(ctx context.Context, dirEntry filetree.Entry
 		return fmt.Errorf("failed to read dir config: %w", err)
 	}
 
-	childDirConfigs := make([]DirConfig, 0, len(dirConfigs)+len(entryDirConfigs))
+	childDirConfigs := make([]PageConfig, 0, len(dirConfigs)+len(entryDirConfigs))
 
 	childDirConfigs = append(childDirConfigs, entryDirConfigs...)
 
@@ -231,7 +235,11 @@ func (s *Impl) processPagesDirEntry(ctx context.Context, dirEntry filetree.Entry
 	return nil
 }
 
-func (s *Impl) processPagesDirEntries(ctx context.Context, entries []filetree.Entry, dirConfigs []DirConfig) error {
+func (s *Impl) processPagesDirEntries(
+	ctx context.Context,
+	entries []filetree.Entry,
+	dirConfigs []PageConfig,
+) error {
 	log := s.log.GetLogger(ctx)
 
 	for _, dirEntry := range entries {
@@ -259,8 +267,8 @@ func (s *Impl) processPagesDirEntries(ctx context.Context, entries []filetree.En
 	return nil
 }
 
-func (s *Impl) readDirConfigs(ctx context.Context, dir string) ([]DirConfig, error) {
-	dirConfigs := make([]DirConfig, 0)
+func (s *Impl) readDirConfigs(ctx context.Context, dir string) ([]PageConfig, error) {
+	dirConfigs := make([]PageConfig, 0)
 
 	configFiles := s.getPossibleConfigFilenames()
 
@@ -276,7 +284,7 @@ func (s *Impl) readDirConfigs(ctx context.Context, dir string) ([]DirConfig, err
 			return nil, fmt.Errorf("failed to read dir %s config %s: %w", dir, configFilePath, err)
 		}
 
-		dirConfigs = append(dirConfigs, dirConfig)
+		dirConfigs = append(dirConfigs, dirConfig.ToPageConfig(dir))
 	}
 
 	return dirConfigs, nil
