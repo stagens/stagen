@@ -4,8 +4,39 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
+
+	"stagen/internal/build"
 )
+
+func (s *Impl) versionInfo() string {
+	parts := make([]string, 0)
+
+	parts = append(parts, "version: "+Version)
+
+	if build.CiPipelineId != build.DefaultValue {
+		parts = append(parts, "ci pipeline dd: "+build.CiPipelineId)
+	}
+
+	if build.GitTag != build.DefaultValue {
+		parts = append(parts, "git tag: "+build.GitTag)
+	}
+
+	if build.GitBranch != build.DefaultValue {
+		parts = append(parts, "git branch: "+build.GitBranch)
+	}
+
+	if build.GitCommit != build.DefaultValue {
+		parts = append(parts, "git commit: "+build.GitCommit)
+	}
+
+	if build.GitCommitShort != build.DefaultValue {
+		parts = append(parts, "git commit short: "+build.GitCommitShort)
+	}
+
+	return strings.Join(parts, ", ")
+}
 
 func (s *Impl) init(ctx context.Context) error {
 	s.mutex.Lock()
@@ -16,6 +47,8 @@ func (s *Impl) init(ctx context.Context) error {
 	}
 
 	log := s.log.GetLogger(ctx)
+
+	log.Info("[STAGEN] " + s.versionInfo())
 
 	log.Info("Initializing stagen...")
 

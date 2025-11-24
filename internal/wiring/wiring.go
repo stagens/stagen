@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"stagen/internal/build"
 	"stagen/internal/config"
 	"stagen/pkg/stagen"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/pixality-inc/golang-core/control_flow"
 	"github.com/pixality-inc/golang-core/env"
 	"github.com/pixality-inc/golang-core/logger"
+	"github.com/pixality-inc/golang-core/util"
 )
 
 type Wiring struct {
@@ -25,7 +27,15 @@ func New() *Wiring {
 
 	cfg := config.LoadConfig()
 
-	appEnv := env.New("dev", "", "", "", "", "", time.Now())
+	appEnv := env.New(
+		"dev",
+		util.Ternary(build.CiPipelineId == build.DefaultValue, "", build.CiPipelineId),
+		util.Ternary(build.GitTag == build.DefaultValue, "", build.GitTag),
+		util.Ternary(build.GitBranch == build.DefaultValue, "", build.GitBranch),
+		util.Ternary(build.GitCommit == build.DefaultValue, "", build.GitCommit),
+		util.Ternary(build.GitCommitShort == build.DefaultValue, "", build.GitCommitShort),
+		time.Now(),
+	)
 
 	baseEnv := base_env.NewBaseEnv(appEnv, &cfg.Logger)
 

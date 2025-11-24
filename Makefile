@@ -1,6 +1,10 @@
 .PHONY: all
 all: dep gen lint test build
 
+.PHONY: cleanup
+cleanup:
+	rm -rf examples/build
+
 .PHONY: dep
 dep:
 	go mod tidy

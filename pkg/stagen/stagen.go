@@ -11,6 +11,8 @@ import (
 	"github.com/pixality-inc/golang-core/logger"
 )
 
+const Version = "0.2.0"
+
 var (
 	ErrInit          = errors.New("init")
 	ErrNoName        = errors.New("no name")
