@@ -1,8 +1,12 @@
 package stagen
 
 import (
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/djherbis/times"
 )
 
 type PageFileInfo struct {
@@ -22,6 +26,57 @@ type PageFileInfo struct {
 	ModifiedAt                    time.Time
 	AccessedAt                    time.Time
 	ChangedAt                     time.Time
+}
+
+func NewPageFileInfo(
+	pageFilename string,
+	workDir string,
+	pagesDir string,
+	stat times.Timespec,
+) *PageFileInfo {
+	workDir, _ = strings.CutPrefix(workDir, "./")
+	pagesDir, _ = strings.CutPrefix(pagesDir, "./")
+
+	pageDir := filepath.Dir(pageFilename)
+	pageDirWithoutWorkDir := strings.TrimPrefix(pageDir, workDir+"/")
+	fullPageFilenameWithoutExt, fullExt := removeFileExtension(pageFilename)
+	pageFilenameWithoutExt := filepath.Base(fullPageFilenameWithoutExt)
+
+	fileExt := strings.TrimPrefix(pageFilename, fullPageFilenameWithoutExt)
+	templateExt := filepath.Ext(fullExt)
+	pageDirWithoutWorkDirAndPagesDir, _ := strings.CutPrefix(pageDir, pagesDir+"/")
+	pageDirWithoutWorkDirAndPagesDir, _ = strings.CutPrefix(pageDirWithoutWorkDirAndPagesDir, pagesDir)
+
+	if !strings.HasPrefix(fileExt, templateExt) {
+		fileExt = strings.TrimSuffix(fileExt, templateExt)
+	} else {
+		templateExt = ""
+	}
+
+	isTemplate := templateExtensionRegexp.MatchString(templateExt)
+	isMarkdown := markdownExtensionRegexp.MatchString(fileExt)
+	isHtml := htmlExtensionRegexp.MatchString(fileExt)
+
+	pageFileInfo := &PageFileInfo{
+		Filename:                      pageFilename,
+		BaseFilename:                  filepath.Base(pageFilename),
+		Path:                          pageDir,
+		PathWithoutWorkDir:            pageDirWithoutWorkDir,
+		PathWithoutWorkDirAndPagesDir: pageDirWithoutWorkDirAndPagesDir,
+		FilenameWithoutExtension:      pageFilenameWithoutExt,
+		FullExtension:                 fullExt,
+		FileExtension:                 fileExt,
+		TemplateExtension:             templateExt,
+		IsTemplate:                    isTemplate,
+		IsMarkdown:                    isMarkdown,
+		IsHtml:                        isHtml,
+		CreatedAt:                     stat.BirthTime(),
+		ModifiedAt:                    stat.ModTime(),
+		AccessedAt:                    stat.AccessTime(),
+		ChangedAt:                     stat.ChangeTime(),
+	}
+
+	return pageFileInfo
 }
 
 type Page interface {

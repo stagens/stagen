@@ -6,7 +6,10 @@ import (
 	"fmt"
 )
 
-var ErrAggDictAlreadyExists = errors.New("agg dict already exists")
+var (
+	ErrAggDictAlreadyExists = errors.New("agg dict already exists")
+	ErrLoadAggDictData      = errors.New("load agg dict data")
+)
 
 func (s *Impl) loadAggDicts(ctx context.Context) error {
 	s.log.GetLogger(ctx).Info("Loading agg dicts...")
@@ -40,11 +43,35 @@ func (s *Impl) loadAggDict(ctx context.Context, aggDictConfig SiteAggDictConfig)
 		return ErrNoName
 	}
 
-	if _, ok := s.aggDictsData[aggDictName]; ok {
+	if _, ok := s.aggDicts[aggDictName]; ok {
 		return fmt.Errorf("%w: %s", ErrAggDictAlreadyExists, aggDictName)
 	}
 
 	log.Infof("Loading agg dict '%s'...", aggDictName)
+
+	s.aggDicts[aggDictName] = aggDictConfig
+
+	return nil
+}
+
+func (s *Impl) loadAggDictsData(ctx context.Context) error {
+	s.log.GetLogger(ctx).Info("Loading agg dicts data...")
+
+	for _, aggDictConfig := range s.aggDicts {
+		if err := s.loadAggDictData(ctx, aggDictConfig); err != nil {
+			return fmt.Errorf("%w: %s: %w", ErrLoadAggDictData, aggDictConfig.Name(), err)
+		}
+	}
+
+	return nil
+}
+
+func (s *Impl) loadAggDictData(ctx context.Context, aggDictConfig SiteAggDictConfig) error {
+	log := s.log.GetLogger(ctx)
+
+	aggDictName := aggDictConfig.Name()
+
+	log.Infof("Loading agg dict data '%s'...", aggDictName)
 
 	s.aggDictsData[aggDictName] = make(map[string]map[string][]Page)
 
@@ -66,20 +93,24 @@ func (s *Impl) loadAggDict(ctx context.Context, aggDictConfig SiteAggDictConfig)
 
 			switch variable := pageVariable.(type) {
 			case string:
+				log.Trace("Added key", aggDictKey, "value", variable, "for page", page.Id())
 				aggDictKeyData[variable] = append(aggDictKeyData[variable], page)
 
 			case []any:
 				for _, arrayValueAny := range variable {
 					switch arrayValue := arrayValueAny.(type) {
 					case string:
+						log.Trace("Added key", aggDictKey, "value", arrayValue, "for page", page.Id())
 						aggDictKeyData[arrayValue] = append(aggDictKeyData[arrayValue], page)
 
 					default:
+						log.Warnf("Unsupported variable array value type: %T (%#v)", arrayValue, arrayValue)
 						// skip
 					}
 				}
 
 			default:
+				log.Warnf("Unsupported variable type: %T (%#v)", variable, variable)
 				// skip
 			}
 		}

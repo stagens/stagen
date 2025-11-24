@@ -55,6 +55,7 @@ type GeneratorSourceType string
 const (
 	GeneratorSourceTypeAggDict  GeneratorSourceType = "agg_dict"
 	GeneratorSourceTypeDatabase GeneratorSourceType = "database"
+	GeneratorSourceTypeData     GeneratorSourceType = "data"
 )
 
 type SiteGeneratorConfigSource interface {
@@ -69,6 +70,7 @@ type SiteGeneratorConfigTemplate interface {
 
 type SiteGeneratorConfigOutput interface {
 	Dir() string
+	FilenameTemplate() string
 }
 
 // SiteGeneratorConfig
@@ -79,6 +81,7 @@ type SiteGeneratorConfig interface {
 	Source() SiteGeneratorConfigSource
 	Template() SiteGeneratorConfigTemplate
 	Output() SiteGeneratorConfigOutput
+	Data() []json.Object
 }
 
 //nolint:iface

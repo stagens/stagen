@@ -21,8 +21,6 @@ site:
     - name: markup
     - name: rss # @todo
   agg_dicts:
-    - name: title
-      keys: [title]
     - name: tags
       keys: [tags]
   generators:
@@ -34,3 +32,20 @@ site:
         name: tag
       output:
         dir: tags
+        filename_template: '{{.AggDictValue}}.html'
+    - name: countries
+      source:
+        type: database
+        name: countries
+      template:
+        name: country
+      output:
+        dir: countries
+    - name: rss.xml
+      source:
+        type: data
+      template:
+        name: rss.xml
+      output: ~
+      data:
+        - id: rss

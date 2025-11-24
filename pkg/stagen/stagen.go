@@ -45,8 +45,9 @@ type Impl struct {
 	initialized  bool
 	extensions   map[string]Extension
 	databases    map[string]Database
+	aggDicts     map[string]SiteAggDictConfig
 	aggDictsData map[string]map[string]map[string][]Page
-	generators   map[string]any
+	generators   map[string]Generator
 	pages        map[string]Page
 	themes       map[string]Theme
 	createdDirs  map[string]struct{}
@@ -65,8 +66,9 @@ func New(
 		initialized:  false,
 		extensions:   make(map[string]Extension),
 		databases:    make(map[string]Database),
+		aggDicts:     make(map[string]SiteAggDictConfig),
 		aggDictsData: make(map[string]map[string]map[string][]Page),
-		generators:   make(map[string]any),
+		generators:   make(map[string]Generator),
 		pages:        make(map[string]Page),
 		themes:       make(map[string]Theme),
 		createdDirs:  make(map[string]struct{}),

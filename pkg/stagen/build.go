@@ -3,7 +3,6 @@ package stagen
 import (
 	"context"
 	"fmt"
-	"maps"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -14,12 +13,10 @@ import (
 )
 
 type PageRenderConfig struct {
-	Page       Page
-	PageConfig PageConfig
-	Theme      Theme
-	Layout     string
-	Data       map[string]any
-	Content    []byte
+	Page    Page
+	Theme   Theme
+	Data    map[string]any
+	Content []byte
 }
 
 func (s *Impl) Build(ctx context.Context) error {
@@ -103,13 +100,15 @@ func (s *Impl) buildPage(ctx context.Context, page Page) error {
 		return fmt.Errorf("failed to get page render config for page '%s': %w", pageId, err)
 	}
 
+	pageConfig := page.Config()
+
 	log.Infof(
 		"Building page '%s' (theme: %s, layout: %s, isHidden: %v, isDraft: %v)...",
 		pageId,
 		pageRenderConfig.Theme.Name(),
-		pageRenderConfig.Layout,
-		pageRenderConfig.PageConfig.IsHidden(),
-		pageRenderConfig.PageConfig.IsDraft(),
+		pageConfig.Layout,
+		pageConfig.IsHidden(),
+		pageConfig.IsDraft(),
 	)
 
 	renderedContent, err := s.renderPage(ctx, pageRenderConfig)
@@ -141,7 +140,7 @@ func (s *Impl) getPageRenderConfig(
 		return nil, fmt.Errorf("%w: %s for page '%s'", ErrThemeNotFound, themeId, pageId)
 	}
 
-	data, err := s.getTemplateData(ctx, page, pageConfig)
+	data, err := s.getTemplateData(ctx, page)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get template data for page '%s': %w", pageId, err)
 	}
@@ -149,12 +148,10 @@ func (s *Impl) getPageRenderConfig(
 	pageContent := page.Content()
 
 	pageRenderConfig := &PageRenderConfig{
-		Page:       page,
-		PageConfig: pageConfig,
-		Theme:      theme,
-		Layout:     pageConfig.Layout(),
-		Data:       data,
-		Content:    pageContent,
+		Page:    page,
+		Theme:   theme,
+		Data:    data,
+		Content: pageContent,
 	}
 
 	return pageRenderConfig, nil
@@ -162,11 +159,12 @@ func (s *Impl) getPageRenderConfig(
 
 func (s *Impl) renderPage(ctx context.Context, pageRenderConfig *PageRenderConfig) ([]byte, error) {
 	pageId := pageRenderConfig.Page.Id()
+	pageConfig := pageRenderConfig.Page.Config()
 
 	renderedContent, err := pageRenderConfig.Theme.Render(
 		ctx,
-		pageRenderConfig.PageConfig.Imports(),
-		pageRenderConfig.Layout,
+		pageConfig.Imports(),
+		pageConfig.Layout(),
 		pageRenderConfig.Content,
 		pageRenderConfig.Page.FileInfo().IsMarkdown,
 		pageRenderConfig.Data,
@@ -181,29 +179,21 @@ func (s *Impl) renderPage(ctx context.Context, pageRenderConfig *PageRenderConfi
 func (s *Impl) getTemplateData(
 	_ context.Context,
 	page Page,
-	pageConfig PageConfig,
 ) (map[string]any, error) {
-	pageId := page.Id()
+	pageData := func(pageEntry Page) (map[string]any, error) {
+		pageId := pageEntry.Id()
+		pageConfig := pageEntry.Config()
+		pageFileInfo := pageEntry.FileInfo()
 
-	pageUrl, err := url.JoinPath(s.siteConfig.BaseUrl(), page.Uri())
-	if err != nil {
-		return nil, fmt.Errorf("failed to resolve page '%s' url: %w", pageId, err)
-	}
+		pageUrl, err := url.JoinPath(s.siteConfig.BaseUrl(), pageEntry.Uri())
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve page '%s' url: %w", pageId, err)
+		}
 
-	pageFileInfo := page.FileInfo()
-
-	data := map[string]any{
-		"Site": map[string]any{
-			"Name":      s.siteConfig.Name(),
-			"BaseUrl":   s.siteConfig.BaseUrl(),
-			"Author":    s.siteConfig.Author(),
-			"Copyright": s.siteConfig.Copyright(),
-			"Logo":      s.siteConfig.Logo(),
-		},
-		"Page": map[string]any{
+		data := map[string]any{
 			"Id":         pageId,
-			"Name":       page.Name(),
-			"Uri":        page.Uri(),
+			"Name":       pageEntry.Name(),
+			"Uri":        pageEntry.Uri(),
 			"Url":        pageUrl,
 			"Title":      pageConfig.Title(),
 			"CreatedAt":  pageFileInfo.CreatedAt,
@@ -214,17 +204,49 @@ func (s *Impl) getTemplateData(
 			"Imports":    pageConfig.Imports(),
 			"Includes":   pageConfig.Includes(),
 			"Extras":     pageConfig.Extras(),
+		}
+
+		return data, nil
+	}
+
+	pagesData := make(map[string]any)
+
+	for _, pageEntry := range s.pages {
+		pageEntryData, err := pageData(pageEntry)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get page entry data for page '%s': %w", pageEntry.Id(), err)
+		}
+
+		pagesData[pageEntry.Id()] = pageEntryData
+	}
+
+	pageEntryData, err := pageData(page)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get page entry data for page '%s': %w", page.Id(), err)
+	}
+
+	data := map[string]any{
+		"Site": map[string]any{
+			"Name":      s.siteConfig.Name(),
+			"BaseUrl":   s.siteConfig.BaseUrl(),
+			"Author":    s.siteConfig.Author(),
+			"Copyright": s.siteConfig.Copyright(),
+			"Logo":      s.siteConfig.Logo(),
 		},
+		"Page": pageEntryData,
 		"System": map[string]any{
 			"BuildTime": s.buildTime,
 			"Now":       time.Now(),
 		},
-		"Pages":     s.pages,
-		"Databases": s.databases,
-		"AggDicts":  nil, // @todo AggDicts
+		"Pages":        pagesData,
+		"Databases":    s.databases,
+		"AggDicts":     s.aggDicts,
+		"AggDictsData": s.aggDictsData,
 	}
 
-	maps.Copy(data, pageConfig.Variables())
+	for k, v := range page.Config().Variables() {
+		data[k] = v //nolint:modernize // @todo
+	}
 
 	return data, nil
 }

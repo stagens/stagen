@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/adrg/frontmatter"
 	"github.com/djherbis/times"
@@ -69,25 +68,31 @@ func (s *Impl) loadPage(
 		return fmt.Errorf("failed to read file '%s': %w", pageFilename, err)
 	}
 
-	err = s.addPage(
+	page, err := s.createPage(
 		ctx,
 		pageFileInfo,
 		fileContent,
+		nil,
 		dirConfigs,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create page '%s': %w", pageFilename, err)
+	}
+
+	if err = s.addPage(page); err != nil {
+		return fmt.Errorf("failed to add page '%s': %w", pageFilename, err)
 	}
 
 	return nil
 }
 
-func (s *Impl) addPage(
+func (s *Impl) createPage(
 	ctx context.Context,
 	pageFileInfo *PageFileInfo,
 	content []byte,
+	extraVariables map[string]any,
 	dirConfigs []PageConfig,
-) error {
+) (Page, error) {
 	var (
 		err            error
 		pageVariables  map[string]any
@@ -100,16 +105,20 @@ func (s *Impl) addPage(
 
 	content, err = frontmatter.Parse(bytes.NewReader(pageContent), &pageVariables)
 	if err != nil {
-		return fmt.Errorf("failed to parse file front matter: %w", err)
+		return nil, fmt.Errorf("failed to parse file front matter: %w", err)
 	}
 
 	_, err = frontmatter.Parse(bytes.NewReader(pageContent), &pageConfigYaml)
 	if err != nil {
-		return fmt.Errorf("failed to parse file front matter: %w", err)
+		return nil, fmt.Errorf("failed to parse file front matter: %w", err)
 	}
 
 	if pageVariables == nil {
 		pageVariables = make(map[string]any)
+	}
+
+	for k, v := range extraVariables {
+		pageVariables[k] = v //nolint:modernize // @todo
 	}
 
 	if pageConfigYaml == nil {
@@ -126,7 +135,7 @@ func (s *Impl) addPage(
 
 	theme, err := s.loadTheme(ctx, themeId)
 	if err != nil {
-		return fmt.Errorf("failed to load theme '%s': %w", themeId, err)
+		return nil, fmt.Errorf("failed to load theme '%s': %w", themeId, err)
 	}
 
 	pageConfig := MergePageConfigs(basePageConfig, theme.Config().ToPageConfig())
@@ -152,6 +161,12 @@ func (s *Impl) addPage(
 		pageConfig,
 	)
 
+	return page, nil
+}
+
+func (s *Impl) addPage(page Page) error {
+	pageId := page.Id()
+
 	if _, ok := s.pages[pageId]; ok {
 		return fmt.Errorf("%w: %s", ErrPageAlreadyExists, pageId)
 	}
@@ -167,47 +182,12 @@ func (s *Impl) getPageFileInfo(pageFilename string) (*PageFileInfo, error) {
 		return nil, fmt.Errorf("failed to stat page file '%s': %w", pageFilename, err)
 	}
 
-	workDir, _ := strings.CutPrefix(s.workDir(), "./")
-	pagesDir, _ := strings.CutPrefix(s.pagesDir(), "./")
-
-	pageDir := filepath.Dir(pageFilename)
-	pageDirWithoutWorkDir := strings.TrimPrefix(pageDir, workDir+"/")
-	fullPageFilenameWithoutExt, fullExt := removeFileExtension(pageFilename)
-	pageFilenameWithoutExt := filepath.Base(fullPageFilenameWithoutExt)
-
-	fileExt := strings.TrimPrefix(pageFilename, fullPageFilenameWithoutExt)
-	templateExt := filepath.Ext(fullExt)
-	pageDirWithoutWorkDirAndPagesDir, _ := strings.CutPrefix(pageDir, pagesDir+"/")
-	pageDirWithoutWorkDirAndPagesDir, _ = strings.CutPrefix(pageDirWithoutWorkDirAndPagesDir, pagesDir)
-
-	if !strings.HasPrefix(fileExt, templateExt) {
-		fileExt = strings.TrimSuffix(fileExt, templateExt)
-	} else {
-		templateExt = ""
-	}
-
-	isTemplate := templateExtensionRegexp.MatchString(templateExt)
-	isMarkdown := markdownExtensionRegexp.MatchString(fileExt)
-	isHtml := htmlExtensionRegexp.MatchString(fileExt)
-
-	pageFileInfo := &PageFileInfo{
-		Filename:                      pageFilename,
-		BaseFilename:                  filepath.Base(pageFilename),
-		Path:                          pageDir,
-		PathWithoutWorkDir:            pageDirWithoutWorkDir,
-		PathWithoutWorkDirAndPagesDir: pageDirWithoutWorkDirAndPagesDir,
-		FilenameWithoutExtension:      pageFilenameWithoutExt,
-		FullExtension:                 fullExt,
-		FileExtension:                 fileExt,
-		TemplateExtension:             templateExt,
-		IsTemplate:                    isTemplate,
-		IsMarkdown:                    isMarkdown,
-		IsHtml:                        isHtml,
-		CreatedAt:                     stat.BirthTime(),
-		ModifiedAt:                    stat.ModTime(),
-		AccessedAt:                    stat.AccessTime(),
-		ChangedAt:                     stat.ChangeTime(),
-	}
+	pageFileInfo := NewPageFileInfo(
+		pageFilename,
+		s.workDir(),
+		s.pagesDir(),
+		stat,
+	)
 
 	return pageFileInfo, nil
 }

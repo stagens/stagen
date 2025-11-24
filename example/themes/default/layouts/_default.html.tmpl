@@ -1,6 +1,6 @@
 {{- define "_default" }}
   <!DOCTYPE html>
-  <html lang="{{ .Site.Lang }}">
+  <html lang="{{ if .Site.Lang -}}{{ .Site.Lang }}{{ else }}en{{ end -}}">
   <head>
     {{- includes .Page.Includes.head_before -}}
     {{- includes .Page.Includes.head -}}

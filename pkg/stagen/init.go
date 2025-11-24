@@ -45,8 +45,22 @@ func (s *Impl) init(ctx context.Context) error {
 		return fmt.Errorf("%w: error loading agg dicts: %w", ErrInit, err)
 	}
 
-	if err := s.loadGenerators(ctx); err != nil {
-		return fmt.Errorf("%w: error loading generators: %w", ErrInit, err)
+	for range 2 {
+		s.aggDictsData = make(map[string]map[string]map[string][]Page)
+
+		if err := s.loadAggDictsData(ctx); err != nil {
+			return fmt.Errorf("%w: error loading agg dicts data: %w", ErrInit, err)
+		}
+
+		s.generators = make(map[string]Generator)
+
+		if err := s.loadGenerators(ctx); err != nil {
+			return fmt.Errorf("%w: error loading generators: %w", ErrInit, err)
+		}
+
+		if err := s.buildGenerators(ctx); err != nil {
+			return fmt.Errorf("failed to build generators: %w", err)
+		}
 	}
 
 	log.Info("Initialization complete")

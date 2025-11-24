@@ -1,0 +1,13 @@
+---
+title: Tags
+---
+
+- AggDictKey = `{{.AggDictKey}}`
+- AggDictValue = `{{.AggDictValue}}`
+
+## Pages
+
+{{- range .AggDictPagesIds }}
+{{ $page := index $.Pages . }}
+- [{{ $page.Variables.title }}]({{ $page.Uri }}) ({{ . }})
+{{ end -}}

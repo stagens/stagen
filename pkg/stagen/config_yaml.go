@@ -236,11 +236,16 @@ func (c *SiteGeneratorConfigTemplateYaml) Name() string {
 }
 
 type SiteGeneratorConfigOutputYaml struct {
-	DirValue string `yaml:"dir"`
+	DirValue              string `yaml:"dir"`
+	FilenameTemplateValue string `yaml:"filename_template"`
 }
 
 func (c *SiteGeneratorConfigOutputYaml) Dir() string {
 	return c.DirValue
+}
+
+func (c *SiteGeneratorConfigOutputYaml) FilenameTemplate() string {
+	return c.FilenameTemplateValue
 }
 
 type SiteGeneratorConfigYaml struct {
@@ -248,6 +253,7 @@ type SiteGeneratorConfigYaml struct {
 	SourceValue   SiteGeneratorConfigSourceYaml   `yaml:"source"`
 	TemplateValue SiteGeneratorConfigTemplateYaml `yaml:"template"`
 	OutputValue   SiteGeneratorConfigOutputYaml   `yaml:"output"`
+	DataValue     []json.Object                   `yaml:"data"`
 }
 
 func (c *SiteGeneratorConfigYaml) Name() string {
@@ -264,6 +270,10 @@ func (c *SiteGeneratorConfigYaml) Template() SiteGeneratorConfigTemplate {
 
 func (c *SiteGeneratorConfigYaml) Output() SiteGeneratorConfigOutput {
 	return &c.OutputValue
+}
+
+func (c *SiteGeneratorConfigYaml) Data() []json.Object {
+	return c.DataValue
 }
 
 type DatabaseConfigYaml struct {
