@@ -1,0 +1,9 @@
+[submodule "example/themes/default"]
+	path = example/themes/default
+	url = https://github.com/stagens/theme-default.git
+[submodule "example/ext/images"]
+	path = example/ext/images
+	url = https://github.com/stagens/ext-images.git
+[submodule "example/ext/videos"]
+	path = example/ext/videos
+	url = https://github.com/stagens/ext-videos.git
