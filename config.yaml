@@ -20,3 +20,17 @@ site:
     - name: videos
     - name: markup
     - name: rss # @todo
+  agg_dicts:
+    - name: title
+      keys: [title]
+    - name: tags
+      keys: [tags]
+  generators:
+    - name: tags
+      source:
+        type: agg_dict
+        name: tags
+      template:
+        name: tag
+      output:
+        dir: tags

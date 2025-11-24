@@ -17,8 +17,8 @@ var (
 	ErrLoadExtension = errors.New("extension load")
 	ErrLoadDatabase  = errors.New("database load")
 	ErrLoadAggDict   = errors.New("agg dict load")
+	ErrLoadGenerator = errors.New("generator load")
 	ErrLoadPage      = errors.New("page load")
-	ErrLoadTheme     = errors.New("theme load")
 )
 
 var (
@@ -45,8 +45,8 @@ type Impl struct {
 	initialized  bool
 	extensions   map[string]Extension
 	databases    map[string]Database
-	aggDicts     map[string]any            // @todo agg dicts
-	aggDictsData map[string]map[string]any // @todo agg dicts
+	aggDictsData map[string]map[string]map[string][]Page
+	generators   map[string]any
 	pages        map[string]Page
 	themes       map[string]Theme
 	createdDirs  map[string]struct{}
@@ -65,8 +65,8 @@ func New(
 		initialized:  false,
 		extensions:   make(map[string]Extension),
 		databases:    make(map[string]Database),
-		aggDicts:     make(map[string]any),
-		aggDictsData: make(map[string]map[string]any),
+		aggDictsData: make(map[string]map[string]map[string][]Page),
+		generators:   make(map[string]any),
 		pages:        make(map[string]Page),
 		themes:       make(map[string]Theme),
 		createdDirs:  make(map[string]struct{}),

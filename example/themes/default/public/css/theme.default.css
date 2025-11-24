@@ -454,12 +454,12 @@ button, .button, [type=submit] {
 }
 
 button.highlight, .button.highlight, [type=submit].highlight {
-    /* @todo!!! */
+    /* @todo */
     background-color: yellow;
 }
 
 button.active, .button.active, [type=submit].active {
-    /* @todo!!! */
+    /* @todo */
     font-weight: bold;
 }
 

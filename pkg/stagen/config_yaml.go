@@ -139,13 +139,15 @@ func (c *ExtensionConfigAuthorYaml) Website() string {
 }
 
 type ExtensionConfigYaml struct {
-	NameValue      string                                      `yaml:"name"`
-	TitleValue     string                                      `yaml:"title"`
-	AuthorValue    ExtensionConfigAuthorYaml                   `yaml:"author"`
-	VariablesValue map[string]any                              `yaml:"variables"`
-	ImportsValue   map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
-	IncludesValue  map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
-	ExtrasValue    map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
+	NameValue       string                                      `yaml:"name"`
+	TitleValue      string                                      `yaml:"title"`
+	AuthorValue     ExtensionConfigAuthorYaml                   `yaml:"author"`
+	VariablesValue  map[string]any                              `yaml:"variables"`
+	ImportsValue    map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
+	IncludesValue   map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
+	ExtrasValue     map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
+	AggDictsValue   []*SiteAggDictConfigYaml                    `yaml:"agg_dicts"`
+	GeneratorsValue []*SiteGeneratorConfigYaml                  `yaml:"generators"`
 }
 
 func (c *ExtensionConfigYaml) Name() string {
@@ -176,6 +178,14 @@ func (c *ExtensionConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
 	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
 }
 
+func (c *ExtensionConfigYaml) AggDicts() []SiteAggDictConfig {
+	return util.SliceOfRefsToInterfaces[SiteAggDictConfigYaml, SiteAggDictConfig](c.AggDictsValue)
+}
+
+func (c *ExtensionConfigYaml) Generators() []SiteGeneratorConfig {
+	return util.SliceOfRefsToInterfaces[SiteGeneratorConfigYaml, SiteGeneratorConfig](c.GeneratorsValue)
+}
+
 func (c *ExtensionConfigYaml) ToPageConfig() PageConfig {
 	return NewPageConfig(
 		"extension:"+c.Name(),
@@ -192,19 +202,68 @@ func (c *ExtensionConfigYaml) ToPageConfig() PageConfig {
 }
 
 type SiteAggDictConfigYaml struct {
-	NameValue string `yaml:"name"`
+	NameValue string   `yaml:"name"`
+	KeysValue []string `yaml:"keys"`
 }
 
 func (c *SiteAggDictConfigYaml) Name() string {
 	return c.NameValue
 }
 
-type SiteGeneratorConfigYaml struct {
+func (c *SiteAggDictConfigYaml) Keys() []string {
+	return c.KeysValue
+}
+
+type SiteGeneratorConfigSourceYaml struct {
+	TypeValue GeneratorSourceType `yaml:"type"`
+	NameValue string              `yaml:"name"`
+}
+
+func (c *SiteGeneratorConfigSourceYaml) Type() GeneratorSourceType {
+	return c.TypeValue
+}
+
+func (c *SiteGeneratorConfigSourceYaml) Name() string {
+	return c.NameValue
+}
+
+type SiteGeneratorConfigTemplateYaml struct {
 	NameValue string `yaml:"name"`
+}
+
+func (c *SiteGeneratorConfigTemplateYaml) Name() string {
+	return c.NameValue
+}
+
+type SiteGeneratorConfigOutputYaml struct {
+	DirValue string `yaml:"dir"`
+}
+
+func (c *SiteGeneratorConfigOutputYaml) Dir() string {
+	return c.DirValue
+}
+
+type SiteGeneratorConfigYaml struct {
+	NameValue     string                          `yaml:"name"`
+	SourceValue   SiteGeneratorConfigSourceYaml   `yaml:"source"`
+	TemplateValue SiteGeneratorConfigTemplateYaml `yaml:"template"`
+	OutputValue   SiteGeneratorConfigOutputYaml   `yaml:"output"`
 }
 
 func (c *SiteGeneratorConfigYaml) Name() string {
 	return c.NameValue
+}
+
+func (c *SiteGeneratorConfigYaml) Source() SiteGeneratorConfigSource {
+	return &c.SourceValue
+}
+
+func (c *SiteGeneratorConfigYaml) Template() SiteGeneratorConfigTemplate {
+	return &c.TemplateValue
+}
+
+func (c *SiteGeneratorConfigYaml) Output() SiteGeneratorConfigOutput {
+	return &c.OutputValue
 }
 
 type DatabaseConfigYaml struct {
@@ -247,6 +306,8 @@ type ThemeConfigYaml struct {
 	ImportsValue       map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
 	IncludesValue      map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue        map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
+	AggDictsValue      []*SiteAggDictConfigYaml                    `yaml:"agg_dicts"`
+	GeneratorsValue    []*SiteGeneratorConfigYaml                  `yaml:"generators"`
 }
 
 func (c *ThemeConfigYaml) Name() string {
@@ -279,6 +340,14 @@ func (c *ThemeConfigYaml) Includes() map[string][]SiteConfigTemplateInclude {
 
 func (c *ThemeConfigYaml) Extras() map[string][]SiteConfigTemplateExtra {
 	return util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateExtraYaml, SiteConfigTemplateExtra](c.ExtrasValue)
+}
+
+func (c *ThemeConfigYaml) AggDicts() []SiteAggDictConfig {
+	return util.SliceOfRefsToInterfaces[SiteAggDictConfigYaml, SiteAggDictConfig](c.AggDictsValue)
+}
+
+func (c *ThemeConfigYaml) Generators() []SiteGeneratorConfig {
+	return util.SliceOfRefsToInterfaces[SiteGeneratorConfigYaml, SiteGeneratorConfig](c.GeneratorsValue)
 }
 
 func (c *ThemeConfigYaml) ToPageConfig() PageConfig {

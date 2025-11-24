@@ -47,6 +47,28 @@ type SiteExtensionConfig interface {
 //nolint:iface
 type SiteAggDictConfig interface {
 	Name() string
+	Keys() []string
+}
+
+type GeneratorSourceType string
+
+const (
+	GeneratorSourceTypeAggDict  GeneratorSourceType = "agg_dict"
+	GeneratorSourceTypeDatabase GeneratorSourceType = "database"
+)
+
+type SiteGeneratorConfigSource interface {
+	Type() GeneratorSourceType
+	Name() string
+}
+
+//nolint:iface
+type SiteGeneratorConfigTemplate interface {
+	Name() string
+}
+
+type SiteGeneratorConfigOutput interface {
+	Dir() string
 }
 
 // SiteGeneratorConfig
@@ -54,8 +76,12 @@ type SiteAggDictConfig interface {
 //nolint:iface
 type SiteGeneratorConfig interface {
 	Name() string
+	Source() SiteGeneratorConfigSource
+	Template() SiteGeneratorConfigTemplate
+	Output() SiteGeneratorConfigOutput
 }
 
+//nolint:iface
 type DatabaseConfig interface {
 	Name() string
 	Data() []json.Object
@@ -77,6 +103,8 @@ type ThemeConfig interface {
 	Imports() map[string][]SiteConfigTemplateImport
 	Includes() map[string][]SiteConfigTemplateInclude
 	Extras() map[string][]SiteConfigTemplateExtra
+	AggDicts() []SiteAggDictConfig
+	Generators() []SiteGeneratorConfig
 	ToPageConfig() PageConfig
 }
 
@@ -95,6 +123,8 @@ type ExtensionConfig interface {
 	Imports() map[string][]SiteConfigTemplateImport
 	Includes() map[string][]SiteConfigTemplateInclude
 	Extras() map[string][]SiteConfigTemplateExtra
+	AggDicts() []SiteAggDictConfig
+	Generators() []SiteGeneratorConfig
 	ToPageConfig() PageConfig
 }
 
@@ -309,7 +339,8 @@ func MergePageConfigs(cfg1 PageConfig, cfg2 PageConfig) PageConfig {
 
 	variables := cfg1.Variables()
 	for k, v := range cfg2.Variables() {
-		variables[k] = v // @todo modernize
+		//nolint:modernize // @todo
+		variables[k] = v
 	}
 
 	imports := cfg1.Imports()

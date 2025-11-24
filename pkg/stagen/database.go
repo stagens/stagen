@@ -2,6 +2,7 @@ package stagen
 
 import "github.com/pixality-inc/golang-core/json"
 
+//nolint:iface
 type Database interface {
 	Name() string
 	Data() []json.Object

@@ -45,6 +45,10 @@ func (s *Impl) init(ctx context.Context) error {
 		return fmt.Errorf("%w: error loading agg dicts: %w", ErrInit, err)
 	}
 
+	if err := s.loadGenerators(ctx); err != nil {
+		return fmt.Errorf("%w: error loading generators: %w", ErrInit, err)
+	}
+
 	log.Info("Initialization complete")
 
 	s.initialized = true
