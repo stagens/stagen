@@ -87,7 +87,7 @@ func (p *Impl) renderToken(token html_tokenizer.Token) (*TokenRenderResult, erro
 		return result, nil
 
 	case *html_tokenizer.CommentToken:
-		return nil, nil
+		return NewTokenRenderResult(), nil
 
 	default:
 		return nil, fmt.Errorf("%w: '%s' (%T)", ErrUnknownTokenType, tok.Type(), tok)

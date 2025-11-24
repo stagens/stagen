@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 
 	coreConfig "github.com/pixality-inc/golang-core/config"
 	"github.com/pixality-inc/golang-core/logger"
@@ -18,12 +17,12 @@ type Config struct {
 }
 
 func RootDir() string {
-	var (
-		_, b, _, _ = runtime.Caller(0)
-		basepath   = filepath.Join(filepath.Dir(b), "../..")
-	)
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
 
-	return basepath
+	return cwd
 }
 
 func configFile() string {

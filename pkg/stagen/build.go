@@ -106,7 +106,7 @@ func (s *Impl) buildPage(ctx context.Context, page Page) error {
 		"Building page '%s' (theme: %s, layout: %s, isHidden: %v, isDraft: %v)...",
 		pageId,
 		pageRenderConfig.Theme.Name(),
-		pageConfig.Layout,
+		pageConfig.Layout(),
 		pageConfig.IsHidden(),
 		pageConfig.IsDraft(),
 	)

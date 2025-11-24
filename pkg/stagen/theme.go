@@ -70,8 +70,8 @@ func NewTheme(
 		}
 
 		wrapperResult := &html_preprocessor.MacroWrapperResult{
-			Before: fmt.Appendf(nil, `{{ define %s }}`, strconv.Quote(uniqueName)),
-			After:  []byte(`{{ end }}`),
+			Before: fmt.Appendf(nil, `{{- define %s }}`, strconv.Quote(uniqueName)),
+			After:  []byte(`{{ end -}}`),
 			Call: fmt.Appendf(
 				nil,
 				`{{ macro %s %s (%s|json_parse) }}`,
