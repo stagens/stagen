@@ -153,6 +153,7 @@ type PageConfig interface {
 	Title() string
 	IsHidden() bool
 	IsDraft() bool
+	IsSystem() bool
 	Variables() map[string]any
 	Imports() map[string][]SiteConfigTemplateImport
 	Includes() map[string][]SiteConfigTemplateInclude
@@ -211,6 +212,7 @@ type PageConfigImpl struct {
 	title        string
 	isHidden     bool
 	isDraft      bool
+	isSystem     bool
 	variables    map[string]any
 	imports      map[string][]SiteConfigTemplateImport
 	includes     map[string][]SiteConfigTemplateInclude
@@ -223,6 +225,7 @@ func NewDefaultPageConfig(configSource string, variables map[string]any) *PageCo
 		"",
 		"",
 		"",
+		false,
 		false,
 		false,
 		variables,
@@ -239,6 +242,7 @@ func NewPageConfig(
 	title string,
 	isHidden bool,
 	isDraft bool,
+	isSystem bool,
 	variables map[string]any,
 	imports map[string][]SiteConfigTemplateImport,
 	includes map[string][]SiteConfigTemplateInclude,
@@ -267,6 +271,7 @@ func NewPageConfig(
 		title:        title,
 		isHidden:     isHidden,
 		isDraft:      isDraft,
+		isSystem:     isSystem,
 		variables:    variables,
 		imports:      imports,
 		includes:     includes,
@@ -296,6 +301,10 @@ func (p *PageConfigImpl) IsHidden() bool {
 
 func (p *PageConfigImpl) IsDraft() bool {
 	return p.isDraft
+}
+
+func (p *PageConfigImpl) IsSystem() bool {
+	return p.isSystem
 }
 
 func (p *PageConfigImpl) Variables() map[string]any {
@@ -340,6 +349,11 @@ func MergePageConfigs(cfg1 PageConfig, cfg2 PageConfig) PageConfig {
 		isDraft = true
 	}
 
+	isSystem := cfg2.IsSystem()
+	if cfg2.IsSystem() {
+		isSystem = true
+	}
+
 	variables := cfg1.Variables()
 	for k, v := range cfg2.Variables() {
 		//nolint:modernize // @todo
@@ -368,6 +382,7 @@ func MergePageConfigs(cfg1 PageConfig, cfg2 PageConfig) PageConfig {
 		title,
 		isHidden,
 		isDraft,
+		isSystem,
 		variables,
 		imports,
 		includes,

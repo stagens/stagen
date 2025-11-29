@@ -163,6 +163,7 @@ func (g *GeneratorImpl) Generate(ctx context.Context) ([]Page, error) {
 		"",
 		false,
 		false,
+		false,
 		g.source.Variables(),
 		nil,
 		nil,

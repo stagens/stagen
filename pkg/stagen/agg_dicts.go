@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 var (
@@ -95,6 +96,11 @@ func (s *Impl) loadAggDictData(ctx context.Context, aggDictConfig SiteAggDictCon
 			case string:
 				log.Trace("Added key", aggDictKey, "value", variable, "for page", page.Id())
 				aggDictKeyData[variable] = append(aggDictKeyData[variable], page)
+
+			case bool:
+				boolStr := strconv.FormatBool(variable)
+				log.Trace("Added key", aggDictKey, "value", boolStr, "for page", page.Id())
+				aggDictKeyData[boolStr] = append(aggDictKeyData[boolStr], page)
 
 			case []any:
 				for _, arrayValueAny := range variable {

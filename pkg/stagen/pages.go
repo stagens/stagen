@@ -140,6 +140,10 @@ func (s *Impl) createPage(
 
 	pageConfig := MergePageConfigs(basePageConfig, theme.Config().ToPageConfig())
 
+	for _, dirConfig := range dirConfigs {
+		pageConfig = MergePageConfigs(pageConfig, dirConfig)
+	}
+
 	pageConfig = MergePageConfigs(pageConfig, readPageConfig)
 
 	pageName := filepath.Join(pageFileInfo.PathWithoutWorkDirAndPagesDir, pageFileInfo.FilenameWithoutExtension)

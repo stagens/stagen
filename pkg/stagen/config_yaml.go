@@ -194,6 +194,7 @@ func (c *ExtensionConfigYaml) ToPageConfig() PageConfig {
 		"",
 		false,
 		false,
+		false,
 		c.Variables(),
 		c.Imports(),
 		c.Includes(),
@@ -368,6 +369,7 @@ func (c *ThemeConfigYaml) ToPageConfig() PageConfig {
 		"",
 		false,
 		false,
+		false,
 		c.Variables(),
 		c.Imports(),
 		c.Includes(),
@@ -486,7 +488,8 @@ type DirConfigYaml struct {
 	LayoutValue    string                                      `yaml:"layout"`
 	TitleValue     string                                      `yaml:"title"`
 	IsHiddenValue  bool                                        `yaml:"is_hidden"`
-	isDraftValue   bool                                        `yaml:"is_draft"`
+	IsDraftValue   bool                                        `yaml:"is_draft"`
+	IsSystemValue  bool                                        `yaml:"is_system"`
 	VariablesValue map[string]any                              `yaml:"variables"`
 	ImportsValue   map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
 	IncludesValue  map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
@@ -510,7 +513,7 @@ func (c *DirConfigYaml) IsHidden() bool {
 }
 
 func (c *DirConfigYaml) IsDraft() bool {
-	return c.isDraftValue
+	return c.IsDraftValue
 }
 
 func (c *DirConfigYaml) Variables() map[string]any {
@@ -536,7 +539,8 @@ func (c *DirConfigYaml) ToPageConfig(dir string) PageConfig {
 		c.LayoutValue,
 		c.TitleValue,
 		c.IsHiddenValue,
-		c.isDraftValue,
+		c.IsDraftValue,
+		c.IsSystemValue,
 		c.VariablesValue,
 		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateImportYaml, SiteConfigTemplateImport](c.ImportsValue),
 		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue),
@@ -551,7 +555,8 @@ type PageConfigYaml struct {
 	LayoutValue   string                                      `yaml:"layout"`
 	TitleValue    string                                      `yaml:"title"`
 	IsHiddenValue bool                                        `yaml:"is_hidden"`
-	IsDraftValue  bool                                        `yaml:"is_draft_value"`
+	IsDraftValue  bool                                        `yaml:"is_draft"`
+	IsSystemValue bool                                        `yaml:"is_system"`
 	ImportsValue  map[string][]*SiteConfigTemplateImportYaml  `yaml:"imports"`
 	IncludesValue map[string][]*SiteConfigTemplateIncludeYaml `yaml:"includes"`
 	ExtrasValue   map[string][]*SiteConfigTemplateExtraYaml   `yaml:"extras"`
@@ -565,6 +570,7 @@ func (c *PageConfigYaml) ToPageConfig(variables map[string]any) PageConfig {
 		c.TitleValue,
 		c.IsHiddenValue,
 		c.IsDraftValue,
+		c.IsSystemValue,
 		variables,
 		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateImportYaml, SiteConfigTemplateImport](c.ImportsValue),
 		util.MapOfSlicesOfRefsToInterfaces[string, SiteConfigTemplateIncludeYaml, SiteConfigTemplateInclude](c.IncludesValue),

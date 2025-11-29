@@ -217,6 +217,7 @@ func (e *Impl) addFuncs(tmpl Template) {
 		},
 		"dict":       e.dict,
 		"slice":      e.slice,
+		"concat":     e.concat,
 		"append":     e.append,
 		"json_parse": e.jsonParse,
 		"has_prefix": strings.HasPrefix,
@@ -279,6 +280,16 @@ func (e *Impl) dict(values ...any) (map[string]any, error) {
 
 func (e *Impl) slice(values ...any) ([]any, error) {
 	return values, nil
+}
+
+func (e *Impl) concat(values ...any) (string, error) {
+	stringsArray := make([]string, len(values))
+
+	for index, value := range values {
+		stringsArray[index] = e.toString(value)
+	}
+
+	return strings.Join(stringsArray, ""), nil
 }
 
 func (e *Impl) append(slice []any, values ...any) ([]any, error) {
