@@ -11,6 +11,7 @@ import (
 
 	"github.com/pixality-inc/golang-core/json"
 	"github.com/pixality-inc/golang-core/logger"
+	"github.com/pixality-inc/golang-core/util"
 )
 
 var (
@@ -207,11 +208,22 @@ func (e *Impl) Include(ctx context.Context, name string, data any) ([]byte, erro
 
 func (e *Impl) addFuncs(tmpl Template) {
 	tmpl.Funcs(textTemplate.FuncMap{
+		"default": func(value any, defaultValue any) any {
+			if util.IsNil(value) {
+				return defaultValue
+			} else {
+				return value
+			}
+		},
 		"dict":       e.dict,
+		"slice":      e.slice,
+		"append":     e.append,
 		"json_parse": e.jsonParse,
 		"has_prefix": strings.HasPrefix,
 		"has_suffix": strings.HasSuffix,
 		"split":      strings.Split,
+		"join":       e.join,
+		"to_string":  e.toString,
 		"extends": func(name string) (string, error) {
 			result, err := e.Import(e.context, LoadTypeLayout, name, true)
 			if err != nil {
@@ -263,6 +275,29 @@ func (e *Impl) dict(values ...any) (map[string]any, error) {
 	}
 
 	return dict, nil
+}
+
+func (e *Impl) slice(values ...any) ([]any, error) {
+	return values, nil
+}
+
+func (e *Impl) append(slice []any, values ...any) ([]any, error) {
+	slice = append(slice, values...)
+
+	return slice, nil
+}
+
+func (e *Impl) join(slice []any, glue string) (string, error) {
+	stringSlice := make([]string, len(slice))
+	for index, element := range slice {
+		stringSlice[index] = e.toString(element)
+	}
+
+	return strings.Join(stringSlice, glue), nil
+}
+
+func (e *Impl) toString(value any) string {
+	return fmt.Sprintf("%s", value)
 }
 
 func (e *Impl) render(name string) (string, error) {
