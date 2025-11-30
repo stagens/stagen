@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Impl) workDir() string {
-	return s.config.WorkDir()
+	return s.config.Dirs().Work()
 }
 
 func removeFileExtension(filename string) (string, string) {

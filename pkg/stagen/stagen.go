@@ -80,7 +80,7 @@ func New(
 
 // nolint:unused
 func (s *Impl) templatesDir() string {
-	dir := s.config.TemplatesDir()
+	dir := s.config.Dirs().Templates()
 	if dir == "" {
 		return filepath.Join(s.workDir(), "templates")
 	}

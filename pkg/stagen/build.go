@@ -69,7 +69,7 @@ func (s *Impl) getBasePageConfig() PageConfig {
 
 // nolint:unused
 func (s *Impl) buildDir() string {
-	dir := s.config.BuildDir()
+	dir := s.config.Dirs().Build()
 	if dir == "" {
 		return filepath.Join(s.workDir(), "build")
 	}

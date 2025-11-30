@@ -13,7 +13,7 @@ import (
 )
 
 func (s *Impl) publicDir() string {
-	dir := s.config.PublicDir()
+	dir := s.config.Dirs().Public()
 	if dir == "" {
 		return filepath.Join(s.workDir(), "public")
 	}

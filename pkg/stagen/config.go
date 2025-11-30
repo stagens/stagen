@@ -6,16 +6,24 @@ import (
 	"github.com/pixality-inc/golang-core/json"
 )
 
+//nolint:modernize
+type SettingsConfig interface{}
+
+type DirsConfig interface {
+	Work() string
+	Build() string
+	Databases() string
+	Extensions() string
+	Themes() string
+	Templates() string
+	Pages() string
+	Public() string
+}
+
 type Config interface {
 	Env() string
-	WorkDir() string
-	BuildDir() string
-	DatabasesDir() string
-	ExtensionsDir() string
-	ThemesDir() string
-	TemplatesDir() string
-	PagesDir() string
-	PublicDir() string
+	Settings() SettingsConfig
+	Dirs() DirsConfig
 }
 
 //nolint:iface

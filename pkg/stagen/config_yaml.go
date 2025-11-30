@@ -377,52 +377,67 @@ func (c *ThemeConfigYaml) ToPageConfig() PageConfig {
 	)
 }
 
+type ConfigSettingsYaml struct{}
+
+type ConfigDirsYaml struct {
+	WorkValue       string `env:"WORK"       env-default:"." yaml:"work"`
+	BuildValue      string `env:"BUILD"      env-default:""  yaml:"build"`
+	DatabasesValue  string `env:"DATABASES"  env-default:""  yaml:"databases"`
+	ExtensionsValue string `env:"EXTENSIONS" env-default:""  yaml:"extensions"`
+	ThemesValue     string `env:"THEMES"     env-default:""  yaml:"themes"`
+	TemplatesValue  string `env:"TEMPLATES"  env-default:""  yaml:"templates"`
+	PagesValue      string `env:"PAGES"      env-default:""  yaml:"pages"`
+	PublicValue     string `env:"PUBLIC"     env-default:""  yaml:"public"`
+}
+
+func (c *ConfigDirsYaml) Work() string {
+	return c.WorkValue
+}
+
+func (c *ConfigDirsYaml) Build() string {
+	return c.BuildValue
+}
+
+func (c *ConfigDirsYaml) Databases() string {
+	return c.DatabasesValue
+}
+
+func (c *ConfigDirsYaml) Extensions() string {
+	return c.ExtensionsValue
+}
+
+func (c *ConfigDirsYaml) Themes() string {
+	return c.ThemesValue
+}
+
+func (c *ConfigDirsYaml) Pages() string {
+	return c.PagesValue
+}
+
+func (c *ConfigDirsYaml) Public() string {
+	return c.PublicValue
+}
+
+func (c *ConfigDirsYaml) Templates() string {
+	return c.TemplatesValue
+}
+
 type ConfigYaml struct {
-	EnvValue           string `env:"ENV"            env-default:"dev" yaml:"env"`
-	WorkDirValue       string `env:"WORK_DIR"       env-default:"."   yaml:"work_dir"`
-	BuildDirValue      string `env:"BUILD_DIR"      env-default:""    yaml:"build_dir"`
-	DatabasesDirValue  string `env:"DATABASES_DIR"  env-default:""    yaml:"databases_dir"`
-	ExtensionsDirValue string `env:"EXTENSIONS_DIR" env-default:""    yaml:"extensions_dir"`
-	ThemesDirValue     string `env:"THEMES_DIR"     env-default:""    yaml:"themes_dir"`
-	TemplatesDirValue  string `env:"TEMPLATES_DIR"  env-default:""    yaml:"templates_dir"`
-	PagesDirValue      string `env:"PAGES_DIR"      env-default:""    yaml:"pages_dir"`
-	PublicDirValue     string `env:"PUBLIC_DIR"     env-default:""    yaml:"public_dir"`
+	EnvValue      string             `env:"ENV"              env-default:"dev" yaml:"env"`
+	SettingsValue ConfigSettingsYaml `env-prefix:"SETTINGS_" yaml:"settings"`
+	DirsValue     ConfigDirsYaml     `env-prefix:"DIRS_"     yaml:"dirs"`
 }
 
 func (c *ConfigYaml) Env() string {
 	return c.EnvValue
 }
 
-func (c *ConfigYaml) WorkDir() string {
-	return c.WorkDirValue
+func (c *ConfigYaml) Settings() SettingsConfig {
+	return c.SettingsValue
 }
 
-func (c *ConfigYaml) BuildDir() string {
-	return c.BuildDirValue
-}
-
-func (c *ConfigYaml) DatabasesDir() string {
-	return c.DatabasesDirValue
-}
-
-func (c *ConfigYaml) ExtensionsDir() string {
-	return c.ExtensionsDirValue
-}
-
-func (c *ConfigYaml) ThemesDir() string {
-	return c.ThemesDirValue
-}
-
-func (c *ConfigYaml) PagesDir() string {
-	return c.PagesDirValue
-}
-
-func (c *ConfigYaml) PublicDir() string {
-	return c.PublicDirValue
-}
-
-func (c *ConfigYaml) TemplatesDir() string {
-	return c.TemplatesDirValue
+func (c *ConfigYaml) Dirs() DirsConfig {
+	return &c.DirsValue
 }
 
 type SiteConfigYaml struct {

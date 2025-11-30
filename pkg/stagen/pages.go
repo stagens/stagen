@@ -19,7 +19,7 @@ import (
 var ErrPageAlreadyExists = errors.New("page already exists")
 
 func (s *Impl) pagesDir() string {
-	dir := s.config.PagesDir()
+	dir := s.config.Dirs().Pages()
 	if dir == "" {
 		return filepath.Join(s.workDir(), "pages")
 	}

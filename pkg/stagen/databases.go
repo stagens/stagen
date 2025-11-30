@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Impl) databasesDir() string {
-	dir := s.config.DatabasesDir()
+	dir := s.config.Dirs().Databases()
 	if dir == "" {
 		return filepath.Join(s.workDir(), "databases")
 	}

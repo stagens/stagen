@@ -12,13 +12,12 @@ import (
 
 var (
 	ErrThemeConfigNotFound = errors.New("theme config not found")
-	ErrThemeAlreadyExists  = errors.New("theme already exists")
 	ErrThemeNotFound       = errors.New("theme not found")
 )
 
 // nolint:unused
 func (s *Impl) themesDir() string {
-	dir := s.config.ThemesDir()
+	dir := s.config.Dirs().Themes()
 	if dir == "" {
 		return filepath.Join(s.workDir(), "themes")
 	}

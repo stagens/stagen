@@ -18,7 +18,7 @@ var (
 
 // nolint:unused
 func (s *Impl) extensionsDir() string {
-	dir := s.config.ExtensionsDir()
+	dir := s.config.Dirs().Extensions()
 	if dir == "" {
 		return filepath.Join(s.workDir(), "ext")
 	}
