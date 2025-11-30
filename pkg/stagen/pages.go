@@ -161,20 +161,34 @@ func (s *Impl) createPage(
 
 	pageUri := "/" + pageId
 
+	isIndex := strings.HasSuffix(pageUri, "/index")
+
 	if s.config.Settings().UseUriHtmlFileExtension() {
 		switch {
-		case strings.HasSuffix(pageUri, "/index.html"):
-		case strings.HasSuffix(pageUri, "/index"):
+		case isIndex:
 			pageUri += htmlExtension
 		default:
 			switch pageFileInfo.FileExtension {
 			case htmlExtension, markdownExtension:
 				pageUri += htmlExtension
+			default:
+				pageUri += pageFileInfo.FileExtension
 			}
 		}
 	} else {
-		pageUri, _ = strings.CutSuffix(pageUri, "/index.html")
-		pageUri, _ = strings.CutSuffix(pageUri, "/index")
+		switch pageFileInfo.FileExtension {
+		case htmlExtension, markdownExtension:
+		default:
+			pageUri += pageFileInfo.FileExtension
+		}
+	}
+
+	pageUri, _ = strings.CutSuffix(pageUri, "/index.html")
+	pageUri, _ = strings.CutSuffix(pageUri, "/index")
+	pageUri, _ = strings.CutSuffix(pageUri, "/.html")
+
+	if pageUri == "" {
+		pageUri = "/"
 	}
 
 	page := NewPage(
