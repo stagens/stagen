@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"strings"
 	"sync"
 	textTemplate "text/template"
@@ -21,11 +22,11 @@ var (
 
 type TemplateEngine interface {
 	HasBlocks(ctx context.Context, content string) (bool, error)
-	Execute(ctx context.Context, layout string, content string, data any) ([]byte, error)
+	Execute(ctx context.Context, layout string, content string, data map[string]any) ([]byte, error)
 	Render(ctx context.Context, name string) ([]byte, error)
-	RenderBlock(ctx context.Context, name string, data any) ([]byte, error)
+	RenderBlock(ctx context.Context, name string, data map[string]any) ([]byte, error)
 	Import(ctx context.Context, loadType LoadType, name string, withCache bool) ([]byte, error)
-	Include(ctx context.Context, name string, data any) ([]byte, error)
+	Include(ctx context.Context, name string, data map[string]any) ([]byte, error)
 }
 
 type Impl struct {
@@ -36,7 +37,7 @@ type Impl struct {
 	template               Template
 	extraTemplateFunctions textTemplate.FuncMap
 	context                context.Context // nolint:containedctx
-	data                   any
+	data                   map[string]any
 	imported               map[string]struct{}
 	mutex                  sync.Mutex
 }
@@ -95,7 +96,7 @@ func (e *Impl) HasBlocks(ctx context.Context, content string) (bool, error) {
 	return !noBlocks, nil
 }
 
-func (e *Impl) Execute(ctx context.Context, layout string, content string, data any) ([]byte, error) {
+func (e *Impl) Execute(ctx context.Context, layout string, content string, data map[string]any) ([]byte, error) {
 	e.context = ctx
 	e.addFuncs(e.template)
 
@@ -146,10 +147,20 @@ func (e *Impl) Render(_ context.Context, name string) ([]byte, error) {
 	return writer.Bytes(), nil
 }
 
-func (e *Impl) RenderBlock(_ context.Context, name string, data any) ([]byte, error) {
+func (e *Impl) RenderBlock(_ context.Context, name string, data map[string]any) ([]byte, error) {
 	tmpl := e.template
 
 	writer := bytes.NewBuffer(nil)
+
+	if data != nil {
+		newData := make(map[string]any, len(e.data))
+		maps.Copy(newData, e.data)
+		maps.Copy(newData, data)
+
+		data = newData
+	} else {
+		data = e.data
+	}
 
 	if err := tmpl.ExecuteTemplate(writer, name, data); err != nil {
 		return nil, fmt.Errorf("render block '%s': %w", name, err)
@@ -188,7 +199,7 @@ func (e *Impl) Import(ctx context.Context, loadType LoadType, name string, withC
 	return nil, nil
 }
 
-func (e *Impl) Include(ctx context.Context, name string, data any) ([]byte, error) {
+func (e *Impl) Include(ctx context.Context, name string, data map[string]any) ([]byte, error) {
 	importResult, err := e.Import(ctx, LoadTypeInclude, name, false)
 	if err != nil {
 		return nil, fmt.Errorf("include '%s': %w", name, err)
@@ -321,7 +332,7 @@ func (e *Impl) render(name string) (string, error) {
 	return string(result), nil
 }
 
-func (e *Impl) include(name string, data any) (string, error) {
+func (e *Impl) include(name string, data map[string]any) (string, error) {
 	result, err := e.Include(e.context, name, data)
 	if err != nil {
 		return "", err
@@ -346,7 +357,7 @@ func (e *Impl) macroRender(name string, uniqueName string, data map[string]any) 
 	return string(macroResult), nil
 }
 
-func (e *Impl) macro(name string, data any) (string, error) {
+func (e *Impl) macro(name string, data map[string]any) (string, error) {
 	macroResult, err := e.RenderBlock(e.context, "macro:"+name, data)
 	if err != nil {
 		return "", fmt.Errorf("macro '%s' render: %w", name, err)

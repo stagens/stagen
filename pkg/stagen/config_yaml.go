@@ -377,7 +377,13 @@ func (c *ThemeConfigYaml) ToPageConfig() PageConfig {
 	)
 }
 
-type ConfigSettingsYaml struct{}
+type ConfigSettingsYaml struct {
+	UseUriHtmlFileExtensionValue bool `env:"USE_URI_HTML_FILE_EXTENSION" env-default:"true" yaml:"use_uri_html_file_extension"`
+}
+
+func (c *ConfigSettingsYaml) UseUriHtmlFileExtension() bool {
+	return c.UseUriHtmlFileExtensionValue
+}
 
 type ConfigDirsYaml struct {
 	WorkValue       string `env:"WORK"       env-default:"." yaml:"work"`
@@ -433,7 +439,7 @@ func (c *ConfigYaml) Env() string {
 }
 
 func (c *ConfigYaml) Settings() SettingsConfig {
-	return c.SettingsValue
+	return &c.SettingsValue
 }
 
 func (c *ConfigYaml) Dirs() DirsConfig {

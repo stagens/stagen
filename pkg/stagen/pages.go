@@ -16,6 +16,11 @@ import (
 	"stagen/pkg/filetree"
 )
 
+const (
+	htmlExtension     = ".html"
+	markdownExtension = ".md"
+)
+
 var ErrPageAlreadyExists = errors.New("page already exists")
 
 func (s *Impl) pagesDir() string {
@@ -155,8 +160,22 @@ func (s *Impl) createPage(
 	}
 
 	pageUri := "/" + pageId
-	pageUri, _ = strings.CutSuffix(pageUri, "/index.html")
-	pageUri, _ = strings.CutSuffix(pageUri, "/index")
+
+	if s.config.Settings().UseUriHtmlFileExtension() {
+		switch {
+		case strings.HasSuffix(pageUri, "/index.html"):
+		case strings.HasSuffix(pageUri, "/index"):
+			pageUri += htmlExtension
+		default:
+			switch pageFileInfo.FileExtension {
+			case htmlExtension, markdownExtension:
+				pageUri += htmlExtension
+			}
+		}
+	} else {
+		pageUri, _ = strings.CutSuffix(pageUri, "/index.html")
+		pageUri, _ = strings.CutSuffix(pageUri, "/index")
+	}
 
 	page := NewPage(
 		pageId,

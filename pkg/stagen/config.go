@@ -6,8 +6,9 @@ import (
 	"github.com/pixality-inc/golang-core/json"
 )
 
-//nolint:modernize
-type SettingsConfig interface{}
+type SettingsConfig interface {
+	UseUriHtmlFileExtension() bool
+}
 
 type DirsConfig interface {
 	Work() string

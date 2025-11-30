@@ -27,7 +27,7 @@ type Theme interface {
 		layout string,
 		content []byte,
 		isMarkdown bool,
-		data any,
+		data map[string]any,
 	) ([]byte, error)
 }
 
@@ -123,7 +123,7 @@ func (t *ThemeImpl) Render(
 	layout string,
 	content []byte,
 	isMarkdown bool,
-	data any,
+	data map[string]any,
 ) ([]byte, error) {
 	var templateEngine template_engine.TemplateEngine
 
@@ -225,7 +225,7 @@ func (t *ThemeImpl) renderMarkdown(
 func (t *ThemeImpl) includes(
 	ctx context.Context,
 	templateEngine template_engine.TemplateEngine,
-	data any,
+	data map[string]any,
 	includes []SiteConfigTemplateInclude,
 ) (string, error) {
 	var results []byte
