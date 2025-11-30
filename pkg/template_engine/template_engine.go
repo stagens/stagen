@@ -241,9 +241,10 @@ func (e *Impl) addFuncs(tmpl Template) {
 
 			return string(result), nil
 		},
-		"include": e.include,
-		"render":  e.render,
-		"macro":   e.macro,
+		"include":      e.include,
+		"render":       e.render,
+		"macro_render": e.macroRender,
+		"macro":        e.macro,
 	})
 
 	tmpl.Funcs(e.extraTemplateFunctions)
@@ -329,17 +330,26 @@ func (e *Impl) include(name string, data any) (string, error) {
 	return string(result), nil
 }
 
-func (e *Impl) macro(name string, uniqueName string, data map[string]any) (string, error) {
+func (e *Impl) macroRender(name string, uniqueName string, data map[string]any) (string, error) {
 	macroContent, err := e.render(uniqueName)
 	if err != nil {
-		return "", fmt.Errorf("macro '%s' with unique name '%s' render: %w", name, uniqueName, err)
+		return "", fmt.Errorf("macro_render '%s' with unique name '%s' render: %w", name, uniqueName, err)
 	}
 
 	data["content"] = macroContent
 
 	macroResult, err := e.RenderBlock(e.context, "macro:"+name, data)
 	if err != nil {
-		return "", fmt.Errorf("macro '%s' with unique name '%s' render: %w", name, uniqueName, err)
+		return "", fmt.Errorf("macro_render '%s' with unique name '%s' render: %w", name, uniqueName, err)
+	}
+
+	return string(macroResult), nil
+}
+
+func (e *Impl) macro(name string, data any) (string, error) {
+	macroResult, err := e.RenderBlock(e.context, "macro:"+name, data)
+	if err != nil {
+		return "", fmt.Errorf("macro '%s' render: %w", name, err)
 	}
 
 	return string(macroResult), nil

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/adrg/frontmatter"
 	"github.com/djherbis/times"
@@ -154,6 +155,8 @@ func (s *Impl) createPage(
 	}
 
 	pageUri := "/" + pageId
+	pageUri, _ = strings.CutSuffix(pageUri, "/index.html")
+	pageUri, _ = strings.CutSuffix(pageUri, "/index")
 
 	page := NewPage(
 		pageId,

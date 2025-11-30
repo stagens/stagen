@@ -74,7 +74,7 @@ func NewTheme(
 			After:  []byte(`{{ end -}}`),
 			Call: fmt.Appendf(
 				nil,
-				`{{ macro %s %s (%s|json_parse) }}`,
+				`{{ macro_render %s %s (%s|json_parse) }}`,
 				strconv.Quote(macroName),
 				strconv.Quote(uniqueName),
 				strconv.Quote(string(jsonAttributes)),
