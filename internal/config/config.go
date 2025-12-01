@@ -48,6 +48,10 @@ func configFile() string {
 	return configFilename
 }
 
+func NewConfigFromEnv() (*Config, error) {
+	return coreConfig.NewConfigFromEnv[Config]()
+}
+
 func NewConfigFromFile(filename string) (*Config, error) {
 	if filename == "" {
 		filename = configFile()

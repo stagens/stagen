@@ -12,21 +12,22 @@ import (
 
 	"stagen/internal/build"
 	"stagen/internal/cli"
+	"stagen/internal/config"
 	"stagen/pkg/git"
 	"stagen/pkg/stagen"
 )
 
 type Wiring struct {
 	ControlFlow control_flow.ControlFlow
+	EnvConfig   *config.Config
 	BaseEnv     base_env.BaseEnv
+	Log         logger.Logger
 	Git         git.Git
 	Stagen      stagen.Stagen
 	Cli         cli.Cli
 }
 
 func New() *Wiring {
-	controlFlow := control_flow.NewControlFlow(context.Background())
-
 	appEnv := env.New(
 		"dev",
 		util.Ternary(build.CiPipelineId == build.DefaultValue, "", build.CiPipelineId),
@@ -37,7 +38,16 @@ func New() *Wiring {
 		time.Now(),
 	)
 
+	envConfig, err := config.NewConfigFromEnv()
+	if err != nil {
+		logger.GetLoggerWithoutContext().WithError(err).Error("Error loading env config")
+	}
+
 	baseEnv := base_env.NewBaseEnv(appEnv, logger.DefaultConfig)
+
+	log := baseEnv.Logger()
+
+	controlFlow := control_flow.NewControlFlow(context.Background())
 
 	// Git
 
@@ -55,7 +65,9 @@ func New() *Wiring {
 
 	return &Wiring{
 		ControlFlow: controlFlow,
+		EnvConfig:   envConfig,
 		BaseEnv:     baseEnv,
+		Log:         log,
 		Git:         gitTool,
 		Stagen:      stagenTool,
 		Cli:         cliTool,

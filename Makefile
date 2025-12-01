@@ -33,6 +33,11 @@ test: go_test
 build:
 	go build -o stagen ./cmd/stagen/stagen.go
 
+.PHONY: install
+install:
+	sudo rm -rf /usr/bin/stagen /usr/local/bin/stagen
+	sudo ln -s $(CURDIR)/stagen /usr/local/bin/stagen
+
 .PHONY: web
 web:
 	python3 -m http.server -d example/build 8001
