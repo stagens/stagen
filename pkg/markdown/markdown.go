@@ -9,7 +9,9 @@ import (
 	enclaveMark "github.com/quailyquaily/goldmark-enclave/mark"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark/text"
 )
 
 type Markdown interface {
@@ -23,6 +25,9 @@ type Impl struct {
 func New() *Impl {
 	return &Impl{
 		markdown: goldmark.New(
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
 			goldmark.WithExtensions(
 				extension.NewTable(extension.WithTableHTMLOptions()),
 				NewMarkdownSpoiler(),
@@ -58,11 +63,18 @@ func New() *Impl {
 }
 
 func (m *Impl) Render(content []byte) ([]byte, error) {
-	var buf bytes.Buffer
+	writer := bytes.NewBuffer(nil)
 
-	if err := m.markdown.Convert(content, &buf); err != nil {
+	doc := m.markdown.Parser().Parse(text.NewReader(content))
+
+	// tree, err := toc.Inspect(doc, content)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	if err := m.markdown.Renderer().Render(writer, content, doc); err != nil {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return writer.Bytes(), nil
 }

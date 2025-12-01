@@ -9,7 +9,7 @@ require (
 	github.com/pixality-inc/golang-core v0.3.7
 	github.com/quailyquaily/goldmark-enclave v0.2.2
 	github.com/spf13/cobra v1.10.1
-	github.com/yuin/goldmark v1.7.8
+	github.com/yuin/goldmark v1.7.11
 	golang.org/x/net v0.46.0
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.1

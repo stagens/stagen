@@ -1,5 +1,8 @@
+VERSION := 1.0.0
+IMAGE := vidog/stagen
+
 .PHONY: all
-all: dep gen lint test build
+all: dep gen lint build test
 
 .PHONY: cleanup
 cleanup:
@@ -19,9 +22,12 @@ gen:
 lint:
 	golangci-lint run --tests
 
-.PHONY: test
-test:
+.PHONY: go_test
+go_test:
 	GOMAXPROCS=4 go test ./... -p 4 -parallel 4 -count=1
+
+.PHONY: test
+test: go_test
 
 .PHONY: build
 build:
@@ -30,3 +36,19 @@ build:
 .PHONY: web
 web:
 	python3 -m http.server -d example/build 8001
+
+.PHONY: docker_build
+docker_build:
+	docker buildx build --platform linux/amd64 -t $(IMAGE):$(VERSION) --load .
+
+.PHONY: docker_publish
+docker_publish:
+	docker push $(IMAGE):$(VERSION)
+
+.PHONY: docker_publish_latest
+docker_publish_latest:
+	docker tag $(IMAGE):$(VERSION) $(IMAGE):latest
+	docker push $(IMAGE):latest
+
+.PHONY: publish
+publish: docker_build docker_publish docker_publish_latest
