@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/pixality-inc/golang-core/logger"
+
+	"stagen/pkg/git"
 )
 
 const Version = "0.2.0"
@@ -36,6 +38,8 @@ var (
 )
 
 type Stagen interface {
+	Init(ctx context.Context, cfg Config, siteConfig SiteConfig) error
+	NewProject(ctx context.Context, name string) error
 	Build(ctx context.Context) error
 }
 
@@ -43,6 +47,7 @@ type Impl struct {
 	log          logger.Loggable
 	config       Config
 	siteConfig   SiteConfig
+	git          git.Git
 	buildTime    time.Time
 	initialized  bool
 	extensions   map[string]Extension
@@ -57,13 +62,11 @@ type Impl struct {
 }
 
 func New(
-	config Config,
-	siteConfig SiteConfig,
+	gitTool git.Git,
 ) *Impl {
 	return &Impl{
 		log:          logger.NewLoggableImplWithService("stagen"),
-		config:       config,
-		siteConfig:   siteConfig,
+		git:          gitTool,
 		buildTime:    time.Now(),
 		initialized:  false,
 		extensions:   make(map[string]Extension),

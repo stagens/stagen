@@ -4,28 +4,28 @@ import (
 	"context"
 	"time"
 
-	"stagen/internal/build"
-	"stagen/internal/config"
-	"stagen/pkg/stagen"
-
 	"github.com/pixality-inc/golang-core/base_env"
 	"github.com/pixality-inc/golang-core/control_flow"
 	"github.com/pixality-inc/golang-core/env"
 	"github.com/pixality-inc/golang-core/logger"
 	"github.com/pixality-inc/golang-core/util"
+
+	"stagen/internal/build"
+	"stagen/internal/cli"
+	"stagen/pkg/git"
+	"stagen/pkg/stagen"
 )
 
 type Wiring struct {
 	ControlFlow control_flow.ControlFlow
-	Config      *config.Config
-	Log         logger.Logger
+	BaseEnv     base_env.BaseEnv
+	Git         git.Git
 	Stagen      stagen.Stagen
+	Cli         cli.Cli
 }
 
 func New() *Wiring {
 	controlFlow := control_flow.NewControlFlow(context.Background())
-
-	cfg := config.LoadConfig()
 
 	appEnv := env.New(
 		"dev",
@@ -37,24 +37,28 @@ func New() *Wiring {
 		time.Now(),
 	)
 
-	baseEnv := base_env.NewBaseEnv(appEnv, &cfg.Logger)
+	baseEnv := base_env.NewBaseEnv(appEnv, logger.DefaultConfig)
 
-	log := baseEnv.Logger()
+	// Git
+
+	gitTool := git.New()
 
 	// Stagen
 
-	stagenEngine := stagen.New(
-		&cfg.Stagen,
-		&cfg.Site,
-	)
+	stagenTool := stagen.New(gitTool)
+
+	// Cli
+
+	cliTool := cli.New(stagenTool)
 
 	// Wire
 
 	return &Wiring{
 		ControlFlow: controlFlow,
-		Config:      cfg,
-		Log:         log,
-		Stagen:      stagenEngine,
+		BaseEnv:     baseEnv,
+		Git:         gitTool,
+		Stagen:      stagenTool,
+		Cli:         cliTool,
 	}
 }
 

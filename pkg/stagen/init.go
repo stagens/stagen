@@ -2,6 +2,7 @@ package stagen
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -9,6 +10,15 @@ import (
 
 	"stagen/internal/build"
 )
+
+var ErrNotInitialized = errors.New("not initialized")
+
+func (s *Impl) Init(_ context.Context, cfg Config, siteConfig SiteConfig) error {
+	s.config = cfg
+	s.siteConfig = siteConfig
+
+	return nil
+}
 
 func (s *Impl) versionInfo() string {
 	parts := make([]string, 0)

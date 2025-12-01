@@ -16,6 +16,20 @@ type Config struct {
 	Site   stagen.SiteConfigYaml `env-prefix:"STAGEN_SITE_" yaml:"site"`
 }
 
+func NewConfig(workDir string) *Config {
+	return &Config{
+		Logger: logger.YamlConfig{},
+		Stagen: stagen.ConfigYaml{
+			EnvValue:      "dev",
+			SettingsValue: stagen.ConfigSettingsYaml{},
+			DirsValue: stagen.ConfigDirsYaml{
+				WorkValue: workDir,
+			},
+		},
+		Site: stagen.SiteConfigYaml{},
+	}
+}
+
 func RootDir() string {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -34,6 +48,18 @@ func configFile() string {
 	return configFilename
 }
 
-func LoadConfig() *Config {
-	return coreConfig.LoadConfig[Config](configFile())
+func NewConfigFromFile(filename string) (*Config, error) {
+	if filename == "" {
+		filename = configFile()
+	}
+
+	return coreConfig.NewConfig[Config](filename)
+}
+
+func LoadConfig(filename string) *Config {
+	if filename == "" {
+		filename = configFile()
+	}
+
+	return coreConfig.LoadConfig[Config](filename)
 }

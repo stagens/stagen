@@ -6,8 +6,9 @@ require (
 	github.com/VojtaStruhar/goldmark-obsidian-callout v0.1.0
 	github.com/adrg/frontmatter v0.2.0
 	github.com/djherbis/times v1.6.0
-	github.com/pixality-inc/golang-core v0.1.13
+	github.com/pixality-inc/golang-core v0.3.7
 	github.com/quailyquaily/goldmark-enclave v0.2.2
+	github.com/spf13/cobra v1.10.1
 	github.com/yuin/goldmark v1.7.8
 	golang.org/x/net v0.46.0
 	gopkg.in/yaml.v2 v2.3.0
@@ -21,6 +22,7 @@ require (
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/ilyakaznacheev/cleanenv v1.5.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josephburnett/jd/v2 v2.3.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -31,6 +33,7 @@ require (
 	github.com/paulmach/orb v0.12.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect

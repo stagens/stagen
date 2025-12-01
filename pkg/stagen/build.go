@@ -20,15 +20,15 @@ type PageRenderConfig struct {
 }
 
 func (s *Impl) Build(ctx context.Context) error {
+	if err := s.init(ctx); err != nil {
+		return fmt.Errorf("failed to initialize: %w", err)
+	}
+
 	log := s.log.GetLogger(ctx)
 
 	log.Info("Running build...")
 
-	track := timetrack.New()
-
-	if err := s.init(ctx); err != nil {
-		return fmt.Errorf("failed to initialize: %w", err)
-	}
+	track := timetrack.New(ctx)
 
 	if err := s.build(ctx); err != nil {
 		return fmt.Errorf("failed to build: %w", err)
