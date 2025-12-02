@@ -3,22 +3,17 @@ package stagen
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/pixality-inc/golang-core/storage"
 	"github.com/pixality-inc/golang-core/util"
 
 	"stagen/pkg/filetree"
 )
 
 func (s *Impl) publicDir() string {
-	dir := s.config.Dirs().Public()
-	if dir == "" {
-		return filepath.Join(s.workDir(), "public")
-	}
-
-	return dir
+	return filepath.Join(s.workDir, "public")
 }
 
 func (s *Impl) copyPublicFiles(ctx context.Context) error {
@@ -28,8 +23,7 @@ func (s *Impl) copyPublicFiles(ctx context.Context) error {
 
 	buildPublicDir := s.buildDir()
 
-	//nolint:gosec
-	if err := os.MkdirAll(buildPublicDir, os.ModePerm); err != nil {
+	if err := s.storage.MkDir(ctx, buildPublicDir); err != nil {
 		return fmt.Errorf("failed to create public dir: %w", err)
 	}
 
@@ -41,7 +35,9 @@ func (s *Impl) copyPublicFiles(ctx context.Context) error {
 		themeDir := theme.Path()
 		themePublicDir := filepath.Join(themeDir, "public")
 
-		if _, exists := util.FileExists(themePublicDir); !exists {
+		if exists, err := s.storage.FileExists(ctx, themePublicDir); err != nil {
+			return fmt.Errorf("faile to check if file %s exists: %w", themePublicDir, err)
+		} else if !exists {
 			continue
 		}
 
@@ -52,7 +48,9 @@ func (s *Impl) copyPublicFiles(ctx context.Context) error {
 		extensionDir := extension.Path()
 		extensionPublicDir := filepath.Join(extensionDir, "public")
 
-		if _, exists := util.FileExists(extensionPublicDir); !exists {
+		if exists, err := s.storage.FileExists(ctx, extensionPublicDir); err != nil {
+			return fmt.Errorf("faile to check if file %s exists: %w", extensionPublicDir, err)
+		} else if !exists {
 			continue
 		}
 
@@ -61,7 +59,9 @@ func (s *Impl) copyPublicFiles(ctx context.Context) error {
 
 	publicDir := s.publicDir()
 
-	if _, exists := util.FileExists(publicDir); exists {
+	if exists, err := s.storage.FileExists(ctx, publicDir); err != nil {
+		return fmt.Errorf("faile to check if file %s exists: %w", publicDir, err)
+	} else if exists {
 		dirsToCopy = append(dirsToCopy, publicDir)
 	}
 
@@ -70,7 +70,7 @@ func (s *Impl) copyPublicFiles(ctx context.Context) error {
 	for _, dir := range dirsToCopy {
 		log.Debugf("Copying public files from '%s'...", dir)
 
-		tree, err := filetree.Tree(ctx, dir, filetree.NoMaxLevel)
+		tree, err := filetree.Tree(ctx, s.storage, dir, filetree.NoMaxLevel)
 		if err != nil {
 			return fmt.Errorf("failed to create tree for dir '%s': %w", dir, err)
 		}
@@ -93,8 +93,7 @@ func (s *Impl) copyPublicFiles(ctx context.Context) error {
 
 					log.Debugf("Creating public directory '%s'...", entryPublicDir)
 
-					//nolint:gosec
-					if err = os.MkdirAll(entryPublicDir, os.ModePerm); err != nil {
+					if err = s.storage.MkDir(ctx, entryPublicDir); err != nil {
 						return fmt.Errorf("failed to create public dir '%s': %w", entryPublicDir, err)
 					}
 
@@ -110,7 +109,23 @@ func (s *Impl) copyPublicFiles(ctx context.Context) error {
 
 			log.Debugf("Copying public file '%s' to '%s'", entryFilename, entryPublicFilename)
 
-			if err = util.CopyFile(entryOriginalFilename, entryPublicFilename); err != nil {
+			// @todo!!!!
+			localStorage, ok := s.storage.(storage.LocalStorage)
+			if !ok {
+				return ErrStorageIsNotALocalStorage
+			}
+
+			entrySourceLocalPath, err := localStorage.LocalPath(ctx, entryOriginalFilename)
+			if err != nil {
+				return fmt.Errorf("failed to get local file path: %w", err)
+			}
+
+			entryDestLocalPath, err := localStorage.LocalPath(ctx, entryPublicFilename)
+			if err != nil {
+				return fmt.Errorf("failed to get local file path: %w", err)
+			}
+
+			if err = util.CopyFile(entrySourceLocalPath, entryDestLocalPath); err != nil {
 				return fmt.Errorf("failed to copy file '%s' to '%s': %w", entryOriginalFilename, entryPublicFilename, err)
 			}
 

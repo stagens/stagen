@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/pixality-inc/golang-core/util"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,14 +14,8 @@ var (
 	ErrThemeNotFound       = errors.New("theme not found")
 )
 
-// nolint:unused
 func (s *Impl) themesDir() string {
-	dir := s.config.Dirs().Themes()
-	if dir == "" {
-		return filepath.Join(s.workDir(), "themes")
-	}
-
-	return dir
+	return filepath.Join(s.workDir, "themes")
 }
 
 func (s *Impl) loadTheme(ctx context.Context, themeId string) (Theme, error) {
@@ -59,7 +52,9 @@ func (s *Impl) getThemeConfig(ctx context.Context, themeDir string) (ThemeConfig
 	for _, configFilename := range configFiles {
 		configFilePath := filepath.Join(themeDir, configFilename)
 
-		if _, exists := util.FileExists(configFilePath); !exists {
+		if exists, err := s.storage.FileExists(ctx, configFilePath); err != nil {
+			return nil, fmt.Errorf("faile to check if file %s exists: %w", configFilePath, err)
+		} else if !exists {
 			continue
 		}
 
@@ -114,7 +109,7 @@ func (s *Impl) addTheme(
 	importPaths = append(importPaths, filepath.Join(themeDir, "imports"))
 	includePaths = append(includePaths, filepath.Join(themeDir, "includes"))
 
-	s.themes[themeId] = NewTheme(themeId, themeDir, themeConfig, layoutsIncludePaths, importPaths, includePaths)
+	s.themes[themeId] = NewTheme(themeId, themeDir, themeConfig, s.storage, layoutsIncludePaths, importPaths, includePaths)
 
 	return s.themes[themeId], nil
 }

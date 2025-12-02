@@ -3,11 +3,11 @@ package stagen
 import (
 	"context"
 	"fmt"
-	"os"
 	"path"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/pixality-inc/golang-core/storage"
 )
 
 func (s *Impl) Watch(ctx context.Context) error {
@@ -34,7 +34,7 @@ func (s *Impl) Watch(ctx context.Context) error {
 func (s *Impl) initWatcher(ctx context.Context) (*fsnotify.Watcher, error) {
 	log := s.log.GetLogger(ctx)
 
-	sourceDir := s.workDir()
+	sourceDir := s.workDir
 	buildDir := s.buildDir()
 
 	watcher, err := fsnotify.NewWatcher()
@@ -51,19 +51,34 @@ func (s *Impl) initWatcher(ctx context.Context) (*fsnotify.Watcher, error) {
 			return
 		}
 
-		// @todo!!! remove prefix of work dir, it's not working
+		// @todo remove prefix of work dir, it's not working
 
-		if strings.HasPrefix(dirClean, ".") || strings.HasPrefix(dirClean, "~") {
+		if (strings.HasPrefix(dirClean, ".") && dirClean != ".") || strings.HasPrefix(dirClean, "~") {
 			return
 		}
 
 		log.Infof("Adding watching directory: %s", dir)
 
-		if err = watcher.Add(dir); err != nil {
+		// @todo!!!!
+		localStorage, ok := s.storage.(storage.LocalStorage)
+		if !ok {
+			log.WithError(ErrStorageIsNotALocalStorage).Errorf("Storage is not a local storage")
+
+			return
+		}
+
+		localDir, err := localStorage.LocalPath(ctx, dir)
+		if err != nil {
+			log.WithError(err).Errorf("Failed to get local directory: %s", dir)
+
+			return
+		}
+
+		if err = watcher.Add(localDir); err != nil {
 			log.WithError(err).Errorf("failed to watch directory %s", dir)
 		}
 
-		entries, err := os.ReadDir(dir)
+		entries, err := s.storage.ReadDir(ctx, dir)
 		if err != nil {
 			log.WithError(err).Errorf("failed to read directory %s", dir)
 
@@ -104,7 +119,7 @@ func (s *Impl) watcherWatch(ctx context.Context, watcher *fsnotify.Watcher) {
 				event.Has(fsnotify.Create)
 
 			if doIt {
-				if path.Clean(event.Name) == buildDir {
+				if path.Clean(event.Name) == buildDir || strings.HasSuffix(path.Clean(event.Name), buildDir) { // @todo!!!!
 					continue
 				}
 
@@ -131,7 +146,7 @@ func (s *Impl) rebuild(ctx context.Context) error {
 
 	buildDir := s.buildDir()
 
-	if err := os.RemoveAll(buildDir); err != nil {
+	if err := s.storage.DeleteDir(ctx, buildDir); err != nil {
 		return fmt.Errorf("failed to remove build directory: %w", err)
 	}
 

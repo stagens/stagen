@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/adrg/frontmatter"
-	"github.com/djherbis/times"
-	"github.com/pixality-inc/golang-core/util"
 	"gopkg.in/yaml.v3"
 
 	"stagen/pkg/filetree"
@@ -24,12 +23,7 @@ const (
 var ErrPageAlreadyExists = errors.New("page already exists")
 
 func (s *Impl) pagesDir() string {
-	dir := s.config.Dirs().Pages()
-	if dir == "" {
-		return filepath.Join(s.workDir(), "pages")
-	}
-
-	return dir
+	return filepath.Join(s.workDir, "pages")
 }
 
 func (s *Impl) loadPages(ctx context.Context) error {
@@ -37,9 +31,7 @@ func (s *Impl) loadPages(ctx context.Context) error {
 
 	log.Info("Loading pages...")
 
-	pagesDir := s.pagesDir()
-
-	tree, err := filetree.Tree(ctx, pagesDir, filetree.NoMaxLevel)
+	tree, err := filetree.Tree(ctx, s.storage, s.pagesDir(), filetree.NoMaxLevel)
 	if err != nil {
 		return fmt.Errorf("failed to build tree for pages dir: %w", err)
 	}
@@ -217,14 +209,16 @@ func (s *Impl) addPage(page Page) error {
 }
 
 func (s *Impl) getPageFileInfo(pageFilename string) (*PageFileInfo, error) {
-	stat, err := times.Stat(pageFilename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to stat page file '%s': %w", pageFilename, err)
-	}
+	// @todo!!!!
+	// stat, err := times.Stat(pageFilename)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to stat page file '%s': %w", pageFilename, err)
+	// }
+	stat := NewFakeTimeSpec(time.Now())
 
 	pageFileInfo := NewPageFileInfo(
 		pageFilename,
-		s.workDir(),
+		s.workDir,
 		s.pagesDir(),
 		stat,
 	)
@@ -295,7 +289,9 @@ func (s *Impl) readDirConfigs(ctx context.Context, dir string) ([]PageConfig, er
 	for _, configFilename := range configFiles {
 		configFilePath := filepath.Join(dir, configFilename)
 
-		if _, exists := util.FileExists(configFilePath); !exists {
+		if exists, err := s.storage.FileExists(ctx, configFilePath); err != nil {
+			return nil, fmt.Errorf("faile to check if file %s exists: %w", configFilePath, err)
+		} else if !exists {
 			continue
 		}
 

@@ -3,14 +3,20 @@ package filetree
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
+
+	"github.com/pixality-inc/golang-core/storage"
 )
 
 const NoMaxLevel = -1
 
-func Tree(ctx context.Context, dir string, maxLevels int) (Entry, error) {
-	entries, err := getDirEntries(ctx, dir, 0, maxLevels)
+func Tree(
+	ctx context.Context,
+	storage storage.Storage,
+	dir string,
+	maxLevels int,
+) (Entry, error) {
+	entries, err := getDirEntries(ctx, storage, dir, 0, maxLevels)
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +60,18 @@ func Visit(_ context.Context, rootEntry Entry, visitor func(entry Entry) error) 
 	return visitEntry(rootEntry)
 }
 
-func getDirEntries(ctx context.Context, dir string, level int, maxLevels int) ([]Entry, error) {
+func getDirEntries(
+	ctx context.Context,
+	storage storage.Storage,
+	dir string,
+	level int,
+	maxLevels int,
+) ([]Entry, error) {
 	if maxLevels != NoMaxLevel && level+1 > maxLevels {
 		return nil, nil
 	}
 
-	dirEntries, err := os.ReadDir(dir)
+	dirEntries, err := storage.ReadDir(ctx, dir)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +82,7 @@ func getDirEntries(ctx context.Context, dir string, level int, maxLevels int) ([
 		children := make([]Entry, 0)
 
 		if entry.IsDir() {
-			children, err = getDirEntries(ctx, filepath.Join(dir, entry.Name()), level+1, maxLevels)
+			children, err = getDirEntries(ctx, storage, filepath.Join(dir, entry.Name()), level+1, maxLevels)
 			if err != nil {
 				return nil, fmt.Errorf("error reading directory %s: %w", filepath.Join(dir, entry.Name()), err)
 			}

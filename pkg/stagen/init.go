@@ -2,23 +2,12 @@ package stagen
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"stagen/internal/build"
 )
-
-var ErrNotInitialized = errors.New("not initialized")
-
-func (s *Impl) Init(_ context.Context, cfg Config, siteConfig SiteConfig) error {
-	s.config = cfg
-	s.siteConfig = siteConfig
-
-	return nil
-}
 
 func (s *Impl) versionInfo() string {
 	parts := make([]string, 0)
@@ -66,7 +55,7 @@ func (s *Impl) init(ctx context.Context) error {
 
 	buildDir := s.buildDir()
 
-	if err := os.MkdirAll(buildDir, os.ModePerm); err != nil {
+	if err := s.storage.MkDir(ctx, buildDir); err != nil {
 		return fmt.Errorf("failed to create build dir: %w", err)
 	}
 

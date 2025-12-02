@@ -3,7 +3,7 @@ package stagen
 import (
 	"context"
 	"fmt"
-	"os"
+	"io"
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
@@ -12,12 +12,7 @@ import (
 )
 
 func (s *Impl) databasesDir() string {
-	dir := s.config.Dirs().Databases()
-	if dir == "" {
-		return filepath.Join(s.workDir(), "databases")
-	}
-
-	return dir
+	return filepath.Join(s.workDir, "databases")
 }
 
 func (s *Impl) loadDatabases(ctx context.Context) error {
@@ -25,7 +20,7 @@ func (s *Impl) loadDatabases(ctx context.Context) error {
 
 	log.Info("Loading databases...")
 
-	tree, err := filetree.Tree(ctx, s.databasesDir(), 1)
+	tree, err := filetree.Tree(ctx, s.storage, s.databasesDir(), 1)
 	if err != nil {
 		return fmt.Errorf("failed to build tree: %w", err)
 	}
@@ -56,7 +51,18 @@ func (s *Impl) loadDatabase(ctx context.Context, databaseFilename string) error 
 
 	log.Infof("Loading database %s...", databaseFilename)
 
-	databaseContent, err := os.ReadFile(databaseFilename)
+	databaseFile, err := s.storage.ReadFile(ctx, databaseFilename)
+	if err != nil {
+		return fmt.Errorf("%w: failed to read database file '%s': %w", ErrLoadDatabase, databaseFilename, err)
+	}
+
+	defer func() {
+		if fErr := databaseFile.Close(); fErr != nil {
+			log.WithError(fErr).Errorf("Failed to close database file: %s", databaseFilename)
+		}
+	}()
+
+	databaseContent, err := io.ReadAll(databaseFile)
 	if err != nil {
 		return fmt.Errorf("%w: failed to read database file '%s': %w", ErrLoadDatabase, databaseFilename, err)
 	}

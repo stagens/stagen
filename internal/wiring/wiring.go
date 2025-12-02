@@ -9,7 +9,6 @@ import (
 	"stagen/internal/cli"
 	"stagen/internal/config"
 	"stagen/pkg/git"
-	"stagen/pkg/stagen"
 )
 
 type Wiring struct {
@@ -17,7 +16,6 @@ type Wiring struct {
 	EnvConfig   *config.Config
 	Log         logger.Logger
 	Git         git.Git
-	Stagen      stagen.Stagen
 	Cli         cli.Cli
 }
 
@@ -48,13 +46,9 @@ func New() *Wiring {
 
 	gitTool := git.New()
 
-	// Stagen
-
-	stagenTool := stagen.New(gitTool)
-
 	// Cli
 
-	cliTool := cli.New(stagenTool)
+	cliTool := cli.New(gitTool)
 
 	// Wire
 
@@ -63,7 +57,6 @@ func New() *Wiring {
 		EnvConfig:   envConfig,
 		Log:         log,
 		Git:         gitTool,
-		Stagen:      stagenTool,
 		Cli:         cliTool,
 	}
 }

@@ -1,10 +1,10 @@
 package stagen
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/url"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -67,14 +67,8 @@ func (s *Impl) getBasePageConfig() PageConfig {
 	return pageConfig
 }
 
-// nolint:unused
 func (s *Impl) buildDir() string {
-	dir := s.config.Dirs().Build()
-	if dir == "" {
-		return filepath.Join(s.workDir(), "build")
-	}
-
-	return dir
+	return filepath.Join(s.workDir, "build")
 }
 
 func (s *Impl) build(ctx context.Context) error {
@@ -280,15 +274,14 @@ func (s *Impl) saveBuildPage(
 	if _, ok := s.createdDirs[dir]; !ok {
 		log.Debugf("Creating directory '%s'...", dir)
 
-		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		if err := s.storage.MkDir(ctx, dir); err != nil {
 			return fmt.Errorf("failed to create directory '%s': %w", dir, err)
 		}
 
 		s.createdDirs[dir] = struct{}{}
 	}
 
-	//nolint:gosec
-	if err := os.WriteFile(saveFilename, content, os.ModePerm); err != nil {
+	if err := s.storage.Write(ctx, saveFilename, bytes.NewReader(content)); err != nil {
 		return fmt.Errorf("failed to save file '%s': %w", saveFilename, err)
 	}
 

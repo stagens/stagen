@@ -10,8 +10,6 @@ stagen:
   http:
     host: 127.0.0.1
     port: 8001
-  dirs:
-    work: ./example
 
 site:
   name: My Stagen Website
@@ -23,12 +21,6 @@ site:
     - name: images
     - name: videos
     - name: markup
-#    - name: blog # @todo
-#    - name: sitemap # @todo
-#    - name: rss # @todo
-#    - name: dev # @todo
-#    - name: wishlist # @todo
-#    - name: gameslist # @todo
   agg_dicts:
     - name: tags
       keys: [tags]

@@ -7,8 +7,11 @@ import (
 	"sync"
 
 	"github.com/pixality-inc/golang-core/logger"
+	"github.com/pixality-inc/golang-core/storage"
+	"github.com/pixality-inc/golang-core/storage/providers"
 
 	"stagen/internal/config"
+	"stagen/pkg/git"
 	"stagen/pkg/stagen"
 )
 
@@ -21,25 +24,26 @@ type Cli interface {
 }
 
 type Impl struct {
-	log    logger.Loggable
-	stagen stagen.Stagen
+	log logger.Loggable
+	git git.Git
 }
 
-func New(stagenTool stagen.Stagen) *Impl {
+func New(gitTool git.Git) *Impl {
 	return &Impl{
-		log:    logger.NewLoggableImplWithService("cli"),
-		stagen: stagenTool,
+		log: logger.NewLoggableImplWithService("cli"),
+		git: gitTool,
 	}
 }
 
 func (c *Impl) Init(ctx context.Context, workDir string, name string) error {
-	defaultConfig := config.NewConfig(workDir)
+	defaultConfig := config.NewConfig()
 
-	if err := c.init(ctx, workDir, defaultConfig); err != nil {
+	stagenTool, err := c.init(ctx, workDir, defaultConfig)
+	if err != nil {
 		return err
 	}
 
-	if err := c.stagen.NewProject(ctx, name); err != nil {
+	if err = stagenTool.NewProject(ctx, name); err != nil {
 		return err
 	}
 
@@ -47,11 +51,12 @@ func (c *Impl) Init(ctx context.Context, workDir string, name string) error {
 }
 
 func (c *Impl) Build(ctx context.Context, workDir string) error {
-	if err := c.init(ctx, workDir, nil); err != nil {
+	stagenTool, err := c.init(ctx, workDir, nil)
+	if err != nil {
 		return err
 	}
 
-	if err := c.stagen.Build(ctx); err != nil {
+	if err = stagenTool.Build(ctx); err != nil {
 		return err
 	}
 
@@ -59,11 +64,12 @@ func (c *Impl) Build(ctx context.Context, workDir string) error {
 }
 
 func (c *Impl) Watch(ctx context.Context, workDir string) error {
-	if err := c.init(ctx, workDir, nil); err != nil {
+	stagenTool, err := c.init(ctx, workDir, nil)
+	if err != nil {
 		return err
 	}
 
-	if err := c.stagen.Watch(ctx); err != nil {
+	if err = stagenTool.Watch(ctx); err != nil {
 		return err
 	}
 
@@ -71,11 +77,12 @@ func (c *Impl) Watch(ctx context.Context, workDir string) error {
 }
 
 func (c *Impl) Web(ctx context.Context, workDir string) error {
-	if err := c.init(ctx, workDir, nil); err != nil {
+	stagenTool, err := c.init(ctx, workDir, nil)
+	if err != nil {
 		return err
 	}
 
-	if err := c.stagen.Web(ctx); err != nil {
+	if err = stagenTool.Web(ctx); err != nil {
 		return err
 	}
 
@@ -83,26 +90,27 @@ func (c *Impl) Web(ctx context.Context, workDir string) error {
 }
 
 func (c *Impl) Dev(ctx context.Context, workDir string) error {
-	if err := c.init(ctx, workDir, nil); err != nil {
+	stagenTool, err := c.init(ctx, workDir, nil)
+	if err != nil {
 		return err
 	}
 
 	log := c.log.GetLogger(ctx)
 
-	if err := c.stagen.Build(ctx); err != nil {
+	if err = stagenTool.Build(ctx); err != nil {
 		return fmt.Errorf("build failed: %w", err)
 	}
 
 	wg := sync.WaitGroup{}
 
 	wg.Go(func() {
-		if err := c.stagen.Watch(ctx); err != nil {
+		if err := stagenTool.Watch(ctx); err != nil {
 			log.WithError(err).Error("Watch failed")
 		}
 	})
 
 	wg.Go(func() {
-		if err := c.stagen.Web(ctx); err != nil {
+		if err := stagenTool.Web(ctx); err != nil {
 			log.WithError(err).Error("Web failed")
 		}
 	})
@@ -112,7 +120,7 @@ func (c *Impl) Dev(ctx context.Context, workDir string) error {
 	return nil
 }
 
-func (c *Impl) init(ctx context.Context, workDir string, cfg *config.Config) error {
+func (c *Impl) init(_ context.Context, workDir string, cfg *config.Config) (stagen.Stagen, error) {
 	if cfg == nil {
 		var err error
 
@@ -120,13 +128,16 @@ func (c *Impl) init(ctx context.Context, workDir string, cfg *config.Config) err
 
 		cfg, err = config.NewConfigFromFile(configFilename)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	if err := c.stagen.Init(ctx, &cfg.Stagen, &cfg.Site); err != nil {
-		return err
-	}
+	localStorage := storage.NewLocalStorage(
+		providers.NewOsProvider(workDir),
+		providers.NoUrlProviderImpl,
+	)
 
-	return nil
+	stagenTool := stagen.New(&cfg.Stagen, &cfg.Site, c.git, localStorage, workDir)
+
+	return stagenTool, nil
 }

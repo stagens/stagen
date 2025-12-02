@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/pixality-inc/golang-core/json"
+	"github.com/pixality-inc/golang-core/storage"
 
 	"stagen/pkg/html_preprocessor"
 	"stagen/pkg/html_tokenizer"
@@ -44,11 +45,13 @@ func NewTheme(
 	name string,
 	path string,
 	config ThemeConfig,
+	storage storage.Storage,
 	layoutsIncludePaths []string,
 	importPaths []string,
 	includePaths []string,
 ) *ThemeImpl {
 	templateLoader := template_engine.NewFsLoader(
+		storage,
 		map[template_engine.LoadType][]string{
 			template_engine.LoadTypeLayout:  layoutsIncludePaths,
 			template_engine.LoadTypeImport:  importPaths,

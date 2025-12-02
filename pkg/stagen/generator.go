@@ -5,12 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
+	"io"
 	"path/filepath"
 	"text/template"
 	"time"
 
-	"github.com/pixality-inc/golang-core/util"
+	"github.com/pixality-inc/golang-core/storage"
 )
 
 var (
@@ -68,6 +68,7 @@ type Generator interface {
 type GeneratorImpl struct {
 	config             SiteGeneratorConfig
 	source             GeneratorSource
+	storage            storage.Storage
 	templateDirs       []string
 	createPageFunction CreatePageFunction
 }
@@ -75,12 +76,14 @@ type GeneratorImpl struct {
 func NewGenerator(
 	config SiteGeneratorConfig,
 	source GeneratorSource,
+	storage storage.Storage,
 	templateDirs []string,
 	createPageFunction CreatePageFunction,
 ) *GeneratorImpl {
 	return &GeneratorImpl{
 		config:             config,
 		source:             source,
+		storage:            storage,
 		templateDirs:       templateDirs,
 		createPageFunction: createPageFunction,
 	}
@@ -118,13 +121,20 @@ func (g *GeneratorImpl) Generate(ctx context.Context) ([]Page, error) {
 		for _, templateExtension := range templateExtensions {
 			templatePath = filepath.Join(templateDir, templateFilename+templateExtension)
 
-			if _, exists := util.FileExists(templatePath); !exists {
+			if exists, err := g.storage.FileExists(ctx, templatePath); err != nil {
+				return nil, fmt.Errorf("faile to check if file %s exists: %w", templatePath, err)
+			} else if !exists {
 				continue
 			}
 
 			found = true
 
-			pageContent, err = os.ReadFile(templatePath)
+			pageFile, err := g.storage.ReadFile(ctx, templatePath)
+			if err != nil {
+				return nil, fmt.Errorf("%w: failed to read template file '%s': %w", ErrGeneratorTemplateNotFound, templatePath, err)
+			}
+
+			pageContent, err = io.ReadAll(pageFile)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read template file '%s': %w", templatePath, err)
 			}

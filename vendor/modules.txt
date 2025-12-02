@@ -103,7 +103,7 @@ github.com/nfnt/resize
 # github.com/paulmach/orb v0.12.0
 ## explicit; go 1.15
 github.com/paulmach/orb
-# github.com/pixality-inc/golang-core v0.4.0
+# github.com/pixality-inc/golang-core v0.4.2
 ## explicit; go 1.25.1
 github.com/pixality-inc/golang-core/cli
 github.com/pixality-inc/golang-core/clock
@@ -113,6 +113,8 @@ github.com/pixality-inc/golang-core/errors
 github.com/pixality-inc/golang-core/http
 github.com/pixality-inc/golang-core/json
 github.com/pixality-inc/golang-core/logger
+github.com/pixality-inc/golang-core/storage
+github.com/pixality-inc/golang-core/storage/providers
 github.com/pixality-inc/golang-core/timetrack
 github.com/pixality-inc/golang-core/util
 # github.com/pkg/errors v0.9.1

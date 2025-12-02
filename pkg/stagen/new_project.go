@@ -1,10 +1,10 @@
 package stagen
 
 import (
+	"bytes"
 	"context"
 	_ "embed"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -30,7 +30,7 @@ func (s *Impl) NewProject(ctx context.Context, name string) error {
 
 	hasGit := s.git.HasGit(ctx)
 
-	sourceDir := s.workDir()
+	sourceDir := s.workDir
 
 	databasesDir := s.databasesDir()
 	extDir := s.extensionsDir()
@@ -54,7 +54,7 @@ func (s *Impl) NewProject(ctx context.Context, name string) error {
 	}
 
 	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		if err := s.storage.MkDir(ctx, dir); err != nil {
 			return fmt.Errorf("failed to create directory %s: %w", dir, err)
 		}
 	}
@@ -77,16 +77,6 @@ func (s *Impl) NewProject(ctx context.Context, name string) error {
 			},
 			SettingsValue: ConfigSettingsYaml{
 				UseUriHtmlFileExtensionValue: false,
-			},
-			DirsValue: ConfigDirsYaml{
-				WorkValue:       "",
-				BuildValue:      "",
-				DatabasesValue:  "",
-				ExtensionsValue: "",
-				ThemesValue:     "",
-				TemplatesValue:  "",
-				PagesValue:      "",
-				PublicValue:     "",
 			},
 		},
 		Site: SiteConfigYaml{
@@ -195,8 +185,7 @@ data:
 	}
 
 	for filename, content := range filesToWrite {
-		//nolint:gosec
-		if err = os.WriteFile(filename, content, os.ModePerm); err != nil {
+		if err = s.storage.Write(ctx, filename, bytes.NewReader(content)); err != nil {
 			return fmt.Errorf("failed to write file %s: %w", filename, err)
 		}
 	}

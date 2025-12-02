@@ -9,6 +9,7 @@ import (
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/pixality-inc/golang-core/http"
+	"github.com/pixality-inc/golang-core/storage"
 	"github.com/valyala/fasthttp"
 )
 
@@ -94,8 +95,24 @@ func (s *Impl) httpHandler(ctx *fasthttp.RequestCtx) {
 		filesToCheck[index] = path.Clean(filename)
 	}
 
+	// @todo!!!!
+	localStorage, ok := s.storage.(storage.LocalStorage)
+	if !ok {
+		s.httpInternalServerError(ctx, ErrStorageIsNotALocalStorage.Error(), ErrStorageIsNotALocalStorage)
+
+		return
+	}
+
 	for _, filename := range filesToCheck {
-		file, err := os.Open(filename)
+		// @todo!!!!
+		filePath, err := localStorage.LocalPath(ctx, filename)
+		if err != nil {
+			s.httpInternalServerError(ctx, err.Error(), err)
+
+			return
+		}
+
+		file, err := os.Open(filePath)
 		if errors.Is(err, os.ErrNotExist) {
 			continue
 		} else if err != nil {
@@ -115,7 +132,7 @@ func (s *Impl) httpHandler(ctx *fasthttp.RequestCtx) {
 			continue
 		}
 
-		s.httpHandleFile(ctx, filename, file)
+		s.httpHandleFile(ctx, filePath, file)
 
 		return
 	}

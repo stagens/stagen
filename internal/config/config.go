@@ -18,7 +18,7 @@ type Config struct {
 	Site   stagen.SiteConfigYaml `env-prefix:"STAGEN_SITE_" yaml:"site"`
 }
 
-func NewConfig(workDir string) *Config {
+func NewConfig() *Config {
 	return &Config{
 		Logger: logger.YamlConfig{},
 		Stagen: stagen.ConfigYaml{
@@ -29,9 +29,6 @@ func NewConfig(workDir string) *Config {
 				ShutdownTimeoutValue: 10 * time.Second,
 			},
 			SettingsValue: stagen.ConfigSettingsYaml{},
-			DirsValue: stagen.ConfigDirsYaml{
-				WorkValue: workDir,
-			},
 		},
 		Site: stagen.SiteConfigYaml{},
 	}

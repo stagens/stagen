@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/pixality-inc/golang-core/logger"
+	"github.com/pixality-inc/golang-core/storage"
 
 	"stagen/pkg/git"
 )
@@ -16,13 +17,14 @@ import (
 const Version = "0.2.0"
 
 var (
-	ErrInit          = errors.New("init")
-	ErrNoName        = errors.New("no name")
-	ErrLoadExtension = errors.New("extension load")
-	ErrLoadDatabase  = errors.New("database load")
-	ErrLoadAggDict   = errors.New("agg dict load")
-	ErrLoadGenerator = errors.New("generator load")
-	ErrLoadPage      = errors.New("page load")
+	ErrInit                      = errors.New("init")
+	ErrNoName                    = errors.New("no name")
+	ErrLoadExtension             = errors.New("extension load")
+	ErrLoadDatabase              = errors.New("database load")
+	ErrLoadAggDict               = errors.New("agg dict load")
+	ErrLoadGenerator             = errors.New("generator load")
+	ErrLoadPage                  = errors.New("page load")
+	ErrStorageIsNotALocalStorage = errors.New("storage is not a local storage")
 )
 
 var (
@@ -38,7 +40,6 @@ var (
 )
 
 type Stagen interface {
-	Init(ctx context.Context, cfg Config, siteConfig SiteConfig) error
 	NewProject(ctx context.Context, name string) error
 	Build(ctx context.Context) error
 	Watch(ctx context.Context) error
@@ -50,6 +51,9 @@ type Impl struct {
 	config       Config
 	siteConfig   SiteConfig
 	git          git.Git
+	storage      storage.Storage
+	workDir      string
+	realWorkDir  string
 	buildTime    time.Time
 	initialized  bool
 	extensions   map[string]Extension
@@ -65,11 +69,20 @@ type Impl struct {
 }
 
 func New(
+	cfg Config,
+	siteConfig SiteConfig,
 	gitTool git.Git,
+	storage storage.Storage,
+	realWorkDir string,
 ) *Impl {
 	return &Impl{
 		log:          logger.NewLoggableImplWithService("stagen"),
+		config:       cfg,
+		siteConfig:   siteConfig,
 		git:          gitTool,
+		storage:      storage,
+		workDir:      "",
+		realWorkDir:  realWorkDir,
 		buildTime:    time.Now(),
 		initialized:  false,
 		extensions:   make(map[string]Extension),
@@ -85,12 +98,6 @@ func New(
 	}
 }
 
-// nolint:unused
 func (s *Impl) templatesDir() string {
-	dir := s.config.Dirs().Templates()
-	if dir == "" {
-		return filepath.Join(s.workDir(), "templates")
-	}
-
-	return dir
+	return filepath.Join(s.workDir, "templates")
 }

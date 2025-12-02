@@ -8,7 +8,7 @@ require (
 	github.com/djherbis/times v1.6.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gabriel-vasile/mimetype v1.4.11
-	github.com/pixality-inc/golang-core v0.4.0
+	github.com/pixality-inc/golang-core v0.4.2
 	github.com/quailyquaily/goldmark-enclave v0.2.2
 	github.com/spf13/cobra v1.10.1
 	github.com/valyala/fasthttp v1.68.0

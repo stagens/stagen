@@ -6,24 +6,16 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/pixality-inc/golang-core/util"
 	"gopkg.in/yaml.v3"
 )
 
 var (
 	ErrExtensionConfigNotFound = errors.New("extension config not found")
 	ErrExtensionAlreadyExists  = errors.New("extension already exists")
-	ErrExtensionNotFound       = errors.New("extension not found")
 )
 
-// nolint:unused
 func (s *Impl) extensionsDir() string {
-	dir := s.config.Dirs().Extensions()
-	if dir == "" {
-		return filepath.Join(s.workDir(), "ext")
-	}
-
-	return dir
+	return filepath.Join(s.workDir, "ext")
 }
 
 func (s *Impl) loadExtensions(ctx context.Context) error {
@@ -70,7 +62,9 @@ func (s *Impl) getExtensionConfig(ctx context.Context, extensionDir string) (Ext
 	for _, configFilename := range configFiles {
 		configFilePath := filepath.Join(extensionDir, configFilename)
 
-		if _, exists := util.FileExists(configFilePath); !exists {
+		if exists, err := s.storage.FileExists(ctx, configFilePath); err != nil {
+			return nil, fmt.Errorf("faile to check if file %s exists: %w", configFilePath, err)
+		} else if !exists {
 			continue
 		}
 

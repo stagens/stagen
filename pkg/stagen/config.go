@@ -11,22 +11,10 @@ type SettingsConfig interface {
 	UseUriHtmlFileExtension() bool
 }
 
-type DirsConfig interface {
-	Work() string
-	Build() string
-	Databases() string
-	Extensions() string
-	Themes() string
-	Templates() string
-	Pages() string
-	Public() string
-}
-
 type Config interface {
 	Env() string
 	Http() http.Config
 	Settings() SettingsConfig
-	Dirs() DirsConfig
 }
 
 //nolint:iface

@@ -11,7 +11,7 @@ import (
 	"stagen/internal/wiring"
 )
 
-func runCommand(rootCtx context.Context, cli cli.Cli) {
+func runCommand(rootCtx context.Context, cliTool cli.Cli) {
 	log := logger.GetLogger(rootCtx)
 
 	// Root
@@ -36,7 +36,7 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 				workDir := args[0]
 				name := cmd.Flag("name").Value.String()
 
-				if err := cli.Init(cmd.Context(), workDir, name); err != nil {
+				if err := cliTool.Init(cmd.Context(), workDir, name); err != nil {
 					log.WithError(err).Fatal()
 				}
 			},
@@ -60,7 +60,7 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 				workDir = args[0]
 			}
 
-			if err := cli.Build(cmd.Context(), workDir); err != nil {
+			if err := cliTool.Build(cmd.Context(), workDir); err != nil {
 				log.WithError(err).Fatal()
 			}
 		},
@@ -79,7 +79,7 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 				workDir = args[0]
 			}
 
-			if err := cli.Watch(cmd.Context(), workDir); err != nil {
+			if err := cliTool.Watch(cmd.Context(), workDir); err != nil {
 				log.WithError(err).Fatal()
 			}
 		},
@@ -98,7 +98,7 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 				workDir = args[0]
 			}
 
-			if err := cli.Web(cmd.Context(), workDir); err != nil {
+			if err := cliTool.Web(cmd.Context(), workDir); err != nil {
 				log.WithError(err).Fatal()
 			}
 		},
@@ -117,7 +117,7 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 				workDir = args[0]
 			}
 
-			if err := cli.Dev(cmd.Context(), workDir); err != nil {
+			if err := cliTool.Dev(cmd.Context(), workDir); err != nil {
 				log.WithError(err).Fatal()
 			}
 		},

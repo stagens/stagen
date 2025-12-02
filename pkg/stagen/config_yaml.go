@@ -386,54 +386,10 @@ func (c *ConfigSettingsYaml) UseUriHtmlFileExtension() bool {
 	return c.UseUriHtmlFileExtensionValue
 }
 
-type ConfigDirsYaml struct {
-	WorkValue       string `env:"WORK"       env-default:"." yaml:"work"`
-	BuildValue      string `env:"BUILD"      env-default:""  yaml:"build"`
-	DatabasesValue  string `env:"DATABASES"  env-default:""  yaml:"databases"`
-	ExtensionsValue string `env:"EXTENSIONS" env-default:""  yaml:"extensions"`
-	ThemesValue     string `env:"THEMES"     env-default:""  yaml:"themes"`
-	TemplatesValue  string `env:"TEMPLATES"  env-default:""  yaml:"templates"`
-	PagesValue      string `env:"PAGES"      env-default:""  yaml:"pages"`
-	PublicValue     string `env:"PUBLIC"     env-default:""  yaml:"public"`
-}
-
-func (c *ConfigDirsYaml) Work() string {
-	return c.WorkValue
-}
-
-func (c *ConfigDirsYaml) Build() string {
-	return c.BuildValue
-}
-
-func (c *ConfigDirsYaml) Databases() string {
-	return c.DatabasesValue
-}
-
-func (c *ConfigDirsYaml) Extensions() string {
-	return c.ExtensionsValue
-}
-
-func (c *ConfigDirsYaml) Themes() string {
-	return c.ThemesValue
-}
-
-func (c *ConfigDirsYaml) Pages() string {
-	return c.PagesValue
-}
-
-func (c *ConfigDirsYaml) Public() string {
-	return c.PublicValue
-}
-
-func (c *ConfigDirsYaml) Templates() string {
-	return c.TemplatesValue
-}
-
 type ConfigYaml struct {
 	EnvValue      string             `env:"ENV"              env-default:"dev" yaml:"env"`
 	HttpValue     http.ConfigYaml    `env-prefix:"HTTP_"     yaml:"http"`
 	SettingsValue ConfigSettingsYaml `env-prefix:"SETTINGS_" yaml:"settings"`
-	DirsValue     ConfigDirsYaml     `env-prefix:"DIRS_"     yaml:"dirs"`
 }
 
 func (c *ConfigYaml) Env() string {
@@ -446,10 +402,6 @@ func (c *ConfigYaml) Http() http.Config {
 
 func (c *ConfigYaml) Settings() SettingsConfig {
 	return &c.SettingsValue
-}
-
-func (c *ConfigYaml) Dirs() DirsConfig {
-	return &c.DirsValue
 }
 
 type SiteConfigYaml struct {
