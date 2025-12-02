@@ -3,8 +3,10 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"time"
 
 	coreConfig "github.com/pixality-inc/golang-core/config"
+	"github.com/pixality-inc/golang-core/http"
 	"github.com/pixality-inc/golang-core/logger"
 
 	"stagen/pkg/stagen"
@@ -20,7 +22,12 @@ func NewConfig(workDir string) *Config {
 	return &Config{
 		Logger: logger.YamlConfig{},
 		Stagen: stagen.ConfigYaml{
-			EnvValue:      "dev",
+			EnvValue: "dev",
+			HttpValue: http.ConfigYaml{
+				HostValue:            "127.0.0.1",
+				PortValue:            8001,
+				ShutdownTimeoutValue: 10 * time.Second,
+			},
 			SettingsValue: stagen.ConfigSettingsYaml{},
 			DirsValue: stagen.ConfigDirsYaml{
 				WorkValue: workDir,

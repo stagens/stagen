@@ -3,6 +3,7 @@ package stagen
 import (
 	"fmt"
 
+	"github.com/pixality-inc/golang-core/http"
 	"github.com/pixality-inc/golang-core/json"
 )
 
@@ -23,6 +24,7 @@ type DirsConfig interface {
 
 type Config interface {
 	Env() string
+	Http() http.Config
 	Settings() SettingsConfig
 	Dirs() DirsConfig
 }

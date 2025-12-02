@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pixality-inc/golang-core/http"
 	"github.com/pixality-inc/golang-core/logger"
 	"gopkg.in/yaml.v3"
 )
@@ -69,6 +70,11 @@ func (s *Impl) NewProject(ctx context.Context, name string) error {
 		},
 		Stagen: ConfigYaml{
 			EnvValue: "dev",
+			HttpValue: http.ConfigYaml{
+				HostValue:            "127.0.0.1",
+				PortValue:            8001,
+				ShutdownTimeoutValue: 10 * time.Second,
+			},
 			SettingsValue: ConfigSettingsYaml{
 				UseUriHtmlFileExtensionValue: false,
 			},

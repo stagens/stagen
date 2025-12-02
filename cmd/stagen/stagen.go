@@ -70,6 +70,29 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 		rootCmd.AddCommand(buildCmd)
 	}
 
+	// Web
+
+	{
+		buildCmd := &cobra.Command{
+			Use:   "web [dir]",
+			Short: "Serve project over http in directory [dir]",
+			Args:  cobra.MaximumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
+				workDir := config.RootDir()
+
+				if len(args) > 0 {
+					workDir = args[0]
+				}
+
+				if err := cli.Web(cmd.Context(), workDir); err != nil {
+					log.WithError(err).Fatal()
+				}
+			},
+		}
+
+		rootCmd.AddCommand(buildCmd)
+	}
+
 	// Execute
 
 	if err := rootCmd.ExecuteContext(rootCtx); err != nil {

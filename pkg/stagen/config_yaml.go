@@ -1,6 +1,7 @@
 package stagen
 
 import (
+	"github.com/pixality-inc/golang-core/http"
 	"github.com/pixality-inc/golang-core/json"
 
 	"stagen/pkg/util"
@@ -430,12 +431,17 @@ func (c *ConfigDirsYaml) Templates() string {
 
 type ConfigYaml struct {
 	EnvValue      string             `env:"ENV"              env-default:"dev" yaml:"env"`
+	HttpValue     http.ConfigYaml    `env-prefix:"HTTP_"     yaml:"http"`
 	SettingsValue ConfigSettingsYaml `env-prefix:"SETTINGS_" yaml:"settings"`
 	DirsValue     ConfigDirsYaml     `env-prefix:"DIRS_"     yaml:"dirs"`
 }
 
 func (c *ConfigYaml) Env() string {
 	return c.EnvValue
+}
+
+func (c *ConfigYaml) Http() http.Config {
+	return &c.HttpValue
 }
 
 func (c *ConfigYaml) Settings() SettingsConfig {

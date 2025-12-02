@@ -41,6 +41,7 @@ type Stagen interface {
 	Init(ctx context.Context, cfg Config, siteConfig SiteConfig) error
 	NewProject(ctx context.Context, name string) error
 	Build(ctx context.Context) error
+	Web(ctx context.Context) error
 }
 
 type Impl struct {
