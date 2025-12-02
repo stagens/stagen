@@ -1,12 +1,28 @@
 FROM golang:1.25 AS build
 
+ARG GIT_TAG
+ARG GIT_BRANCH
+ARG GIT_COMMIT
+ARG GIT_COMMIT_SHORT
+
 WORKDIR /app
 
 COPY . .
 
 RUN go mod tidy && go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags "-extldflags '-static'" -o stagen ./cmd/stagen/stagen.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build \
+      -a \
+      -installsuffix cgo \
+      -ldflags "\
+        -extldflags '-static' \
+        -X 'stagen/internal/build.GitTag=${GIT_TAG}' \
+        -X 'stagen/internal/build.GitBranch=${GIT_BRANCH}' \
+        -X 'stagen/internal/build.GitCommit=${GIT_COMMIT}' \
+        -X 'stagen/internal/build.GitCommitShort=${GIT_COMMIT_SHORT}'" \
+      -o stagen \
+      ./cmd/stagen/stagen.go
 
 FROM alpine AS pagefind
 

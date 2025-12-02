@@ -2,15 +2,10 @@ package wiring
 
 import (
 	"context"
-	"time"
 
-	"github.com/pixality-inc/golang-core/base_env"
 	"github.com/pixality-inc/golang-core/control_flow"
-	"github.com/pixality-inc/golang-core/env"
 	"github.com/pixality-inc/golang-core/logger"
-	"github.com/pixality-inc/golang-core/util"
 
-	"stagen/internal/build"
 	"stagen/internal/cli"
 	"stagen/internal/config"
 	"stagen/pkg/git"
@@ -20,7 +15,6 @@ import (
 type Wiring struct {
 	ControlFlow control_flow.ControlFlow
 	EnvConfig   *config.Config
-	BaseEnv     base_env.BaseEnv
 	Log         logger.Logger
 	Git         git.Git
 	Stagen      stagen.Stagen
@@ -28,24 +22,25 @@ type Wiring struct {
 }
 
 func New() *Wiring {
-	appEnv := env.New(
-		"dev",
-		util.Ternary(build.CiPipelineId == build.DefaultValue, "", build.CiPipelineId),
-		util.Ternary(build.GitTag == build.DefaultValue, "", build.GitTag),
-		util.Ternary(build.GitBranch == build.DefaultValue, "", build.GitBranch),
-		util.Ternary(build.GitCommit == build.DefaultValue, "", build.GitCommit),
-		util.Ternary(build.GitCommitShort == build.DefaultValue, "", build.GitCommitShort),
-		time.Now(),
-	)
-
+	// appEnv := env.New(
+	// 	 "dev",
+	// 	 util.Ternary(build.CiPipelineId == build.DefaultValue, "", build.CiPipelineId),
+	// 	 util.Ternary(build.GitTag == build.DefaultValue, "", build.GitTag),
+	// 	 util.Ternary(build.GitBranch == build.DefaultValue, "", build.GitBranch),
+	// 	 util.Ternary(build.GitCommit == build.DefaultValue, "", build.GitCommit),
+	// 	 util.Ternary(build.GitCommitShort == build.DefaultValue, "", build.GitCommitShort),
+	// 	 time.Now(),
+	// )
 	envConfig, err := config.NewConfigFromEnv()
 	if err != nil {
 		logger.GetLoggerWithoutContext().WithError(err).Error("Error loading env config")
 	}
 
-	baseEnv := base_env.NewBaseEnv(appEnv, logger.DefaultConfig)
+	log := logger.New(logger.DefaultConfig)
 
-	log := baseEnv.Logger()
+	if err := logger.InitLogSpawner(log); err != nil {
+		log.WithError(err).Fatal("error initializing log spawner")
+	}
 
 	controlFlow := control_flow.NewControlFlow(context.Background())
 
@@ -66,7 +61,6 @@ func New() *Wiring {
 	return &Wiring{
 		ControlFlow: controlFlow,
 		EnvConfig:   envConfig,
-		BaseEnv:     baseEnv,
 		Log:         log,
 		Git:         gitTool,
 		Stagen:      stagenTool,

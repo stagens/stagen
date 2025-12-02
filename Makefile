@@ -1,5 +1,15 @@
-VERSION := 1.0.0
+VERSION := 1.0.1
 IMAGE := vidog/stagen
+
+GIT_TAG         := $(shell git describe --tags --dirty --always 2>/dev/null || echo "dev")
+GIT_BRANCH      := $(shell git rev-parse --abbrev-ref HEAD)
+GIT_COMMIT      := $(shell git rev-parse HEAD)
+GIT_COMMIT_SHORT:= $(shell git rev-parse --short HEAD)
+
+LDFLAGS := -X 'stagen/internal/build.GitTag=$(GIT_TAG)' \
+           -X 'stagen/internal/build.GitBranch=$(GIT_BRANCH)' \
+           -X 'stagen/internal/build.GitCommit=$(GIT_COMMIT)' \
+           -X 'stagen/internal/build.GitCommitShort=$(GIT_COMMIT_SHORT)'
 
 .PHONY: all
 all: dep gen lint build test
@@ -31,7 +41,10 @@ test: go_test
 
 .PHONY: build
 build:
-	go build -o stagen ./cmd/stagen/stagen.go
+	go build \
+		-ldflags "$(LDFLAGS)" \
+		-o stagen \
+		./cmd/stagen/stagen.go
 
 .PHONY: install
 install:
@@ -44,7 +57,14 @@ web:
 
 .PHONY: docker_build
 docker_build:
-	docker buildx build --platform linux/amd64 -t $(IMAGE):$(VERSION) --load .
+	docker buildx build \
+		--platform linux/amd64 \
+		--build-arg GIT_TAG=$(GIT_TAG) \
+		--build-arg GIT_BRANCH=$(GIT_BRANCH) \
+		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
+		--build-arg GIT_COMMIT_SHORT=$(GIT_COMMIT_SHORT) \
+		-t $(IMAGE):$(VERSION) \
+		--load .
 
 .PHONY: docker_publish
 docker_publish:

@@ -6,7 +6,7 @@ require (
 	github.com/VojtaStruhar/goldmark-obsidian-callout v0.1.0
 	github.com/adrg/frontmatter v0.2.0
 	github.com/djherbis/times v1.6.0
-	github.com/pixality-inc/golang-core v0.3.9
+	github.com/pixality-inc/golang-core v0.4.0
 	github.com/quailyquaily/goldmark-enclave v0.2.2
 	github.com/spf13/cobra v1.10.1
 	github.com/yuin/goldmark v1.7.13
