@@ -1,4 +1,4 @@
-VERSION := 1.0.1
+VERSION := 1.0.2
 IMAGE := vidog/stagen
 
 GIT_TAG         := $(shell git describe --tags --dirty --always 2>/dev/null || echo "dev")
@@ -51,9 +51,13 @@ install:
 	sudo rm -rf /usr/bin/stagen /usr/local/bin/stagen
 	sudo ln -s $(CURDIR)/stagen /usr/local/bin/stagen
 
+.PHONY: watch
+watch:
+	go run ./cmd/stagen/stagen.go watch
+
 .PHONY: web
 web:
-	python3 -m http.server -d example/build 8001
+	go run ./cmd/stagen/stagen.go web
 
 .PHONY: docker_build
 docker_build:

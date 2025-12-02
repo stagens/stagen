@@ -70,6 +70,29 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 		rootCmd.AddCommand(buildCmd)
 	}
 
+	// Watch
+
+	{
+		buildCmd := &cobra.Command{
+			Use:   "watch [dir]",
+			Short: "Watch project and rebuild in directory [dir]",
+			Args:  cobra.MaximumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
+				workDir := config.RootDir()
+
+				if len(args) > 0 {
+					workDir = args[0]
+				}
+
+				if err := cli.Watch(cmd.Context(), workDir); err != nil {
+					log.WithError(err).Fatal()
+				}
+			},
+		}
+
+		rootCmd.AddCommand(buildCmd)
+	}
+
 	// Web
 
 	{

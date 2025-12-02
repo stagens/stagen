@@ -49,8 +49,8 @@ func (s *Impl) versionInfo() string {
 }
 
 func (s *Impl) init(ctx context.Context) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.initMutex.Lock()
+	defer s.initMutex.Unlock()
 
 	if s.initialized {
 		return nil

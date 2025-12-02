@@ -13,6 +13,7 @@ import (
 type Cli interface {
 	Init(ctx context.Context, workDir string, name string) error
 	Build(ctx context.Context, workDir string) error
+	Watch(ctx context.Context, workDir string) error
 	Web(ctx context.Context, workDir string) error
 }
 
@@ -48,6 +49,18 @@ func (c *Impl) Build(ctx context.Context, workDir string) error {
 	}
 
 	if err := c.stagen.Build(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Impl) Watch(ctx context.Context, workDir string) error {
+	if err := c.init(ctx, workDir, nil); err != nil {
+		return err
+	}
+
+	if err := c.stagen.Watch(ctx); err != nil {
 		return err
 	}
 

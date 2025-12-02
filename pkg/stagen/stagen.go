@@ -41,6 +41,7 @@ type Stagen interface {
 	Init(ctx context.Context, cfg Config, siteConfig SiteConfig) error
 	NewProject(ctx context.Context, name string) error
 	Build(ctx context.Context) error
+	Watch(ctx context.Context) error
 	Web(ctx context.Context) error
 }
 
@@ -59,7 +60,8 @@ type Impl struct {
 	pages        map[string]Page
 	themes       map[string]Theme
 	createdDirs  map[string]struct{}
-	mutex        sync.Mutex
+	initMutex    sync.Mutex
+	rebuildMutex sync.Mutex
 }
 
 func New(
@@ -78,7 +80,8 @@ func New(
 		pages:        make(map[string]Page),
 		themes:       make(map[string]Theme),
 		createdDirs:  make(map[string]struct{}),
-		mutex:        sync.Mutex{},
+		initMutex:    sync.Mutex{},
+		rebuildMutex: sync.Mutex{},
 	}
 }
 
