@@ -2,7 +2,9 @@ package cli
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
+	"sync"
 
 	"github.com/pixality-inc/golang-core/logger"
 
@@ -15,6 +17,7 @@ type Cli interface {
 	Build(ctx context.Context, workDir string) error
 	Watch(ctx context.Context, workDir string) error
 	Web(ctx context.Context, workDir string) error
+	Dev(ctx context.Context, workDir string) error
 }
 
 type Impl struct {
@@ -75,6 +78,36 @@ func (c *Impl) Web(ctx context.Context, workDir string) error {
 	if err := c.stagen.Web(ctx); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (c *Impl) Dev(ctx context.Context, workDir string) error {
+	if err := c.init(ctx, workDir, nil); err != nil {
+		return err
+	}
+
+	log := c.log.GetLogger(ctx)
+
+	if err := c.stagen.Build(ctx); err != nil {
+		return fmt.Errorf("build failed: %w", err)
+	}
+
+	wg := sync.WaitGroup{}
+
+	wg.Go(func() {
+		if err := c.stagen.Watch(ctx); err != nil {
+			log.WithError(err).Error("Watch failed")
+		}
+	})
+
+	wg.Go(func() {
+		if err := c.stagen.Web(ctx); err != nil {
+			log.WithError(err).Error("Web failed")
+		}
+	})
+
+	wg.Wait()
 
 	return nil
 }

@@ -28,7 +28,7 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 	// Init
 
 	{
-		initCmd := &cobra.Command{
+		cmd := &cobra.Command{
 			Use:   "init dir",
 			Short: "Initialize new project in directory",
 			Args:  cobra.ExactArgs(1),
@@ -42,79 +42,86 @@ func runCommand(rootCtx context.Context, cli cli.Cli) {
 			},
 		}
 
-		initCmd.Flags().StringP("name", "n", "Stagen Website", "website name")
+		cmd.Flags().StringP("name", "n", "Stagen Website", "website name")
 
-		rootCmd.AddCommand(initCmd)
+		rootCmd.AddCommand(cmd)
 	}
 
 	// Build
 
-	{
-		buildCmd := &cobra.Command{
-			Use:   "build [dir]",
-			Short: "Build project in directory [dir]",
-			Args:  cobra.MaximumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
-				workDir := config.RootDir()
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "build [dir]",
+		Short: "Build project in directory [dir]",
+		Args:  cobra.MaximumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
+			workDir := config.RootDir()
 
-				if len(args) > 0 {
-					workDir = args[0]
-				}
+			if len(args) > 0 {
+				workDir = args[0]
+			}
 
-				if err := cli.Build(cmd.Context(), workDir); err != nil {
-					log.WithError(err).Fatal()
-				}
-			},
-		}
-
-		rootCmd.AddCommand(buildCmd)
-	}
+			if err := cli.Build(cmd.Context(), workDir); err != nil {
+				log.WithError(err).Fatal()
+			}
+		},
+	})
 
 	// Watch
 
-	{
-		buildCmd := &cobra.Command{
-			Use:   "watch [dir]",
-			Short: "Watch project and rebuild in directory [dir]",
-			Args:  cobra.MaximumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
-				workDir := config.RootDir()
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "watch [dir]",
+		Short: "Watch project and rebuild in directory [dir]",
+		Args:  cobra.MaximumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
+			workDir := config.RootDir()
 
-				if len(args) > 0 {
-					workDir = args[0]
-				}
+			if len(args) > 0 {
+				workDir = args[0]
+			}
 
-				if err := cli.Watch(cmd.Context(), workDir); err != nil {
-					log.WithError(err).Fatal()
-				}
-			},
-		}
-
-		rootCmd.AddCommand(buildCmd)
-	}
+			if err := cli.Watch(cmd.Context(), workDir); err != nil {
+				log.WithError(err).Fatal()
+			}
+		},
+	})
 
 	// Web
 
-	{
-		buildCmd := &cobra.Command{
-			Use:   "web [dir]",
-			Short: "Serve project over http in directory [dir]",
-			Args:  cobra.MaximumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
-				workDir := config.RootDir()
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "web [dir]",
+		Short: "Serve project over http in directory [dir]",
+		Args:  cobra.MaximumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
+			workDir := config.RootDir()
 
-				if len(args) > 0 {
-					workDir = args[0]
-				}
+			if len(args) > 0 {
+				workDir = args[0]
+			}
 
-				if err := cli.Web(cmd.Context(), workDir); err != nil {
-					log.WithError(err).Fatal()
-				}
-			},
-		}
+			if err := cli.Web(cmd.Context(), workDir); err != nil {
+				log.WithError(err).Fatal()
+			}
+		},
+	})
 
-		rootCmd.AddCommand(buildCmd)
-	}
+	// Dev
+
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "dev [dir]",
+		Short: "Serve project over http and watch for changes in directory [dir]",
+		Args:  cobra.MaximumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) { //nolint:contextcheck
+			workDir := config.RootDir()
+
+			if len(args) > 0 {
+				workDir = args[0]
+			}
+
+			if err := cli.Dev(cmd.Context(), workDir); err != nil {
+				log.WithError(err).Fatal()
+			}
+		},
+	})
 
 	// Execute
 
