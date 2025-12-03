@@ -14,6 +14,15 @@
 $ go install github.com/stagens/stagen/cmd/stagen@latest
 ```
 
+## Build from sources
+
+```shell
+$ git clone https://github.com/stagens/stagen.git
+$ cd stagen
+$ make
+$ make install
+```
+
 ## Examples
 
 ### Create new project in current directory
