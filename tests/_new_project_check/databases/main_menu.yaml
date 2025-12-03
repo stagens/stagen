@@ -1,0 +1,5 @@
+---
+name: main_menu
+data:
+  - page: index
+    title: Home

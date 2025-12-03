@@ -16,6 +16,7 @@ func (s *Impl) publicDir() string {
 	return filepath.Join(s.workDir, "public")
 }
 
+// nolint:gocognit
 func (s *Impl) copyPublicFiles(ctx context.Context) error {
 	log := s.log.GetLogger(ctx)
 

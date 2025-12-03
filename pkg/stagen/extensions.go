@@ -21,8 +21,8 @@ func (s *Impl) extensionsDir() string {
 func (s *Impl) loadExtensions(ctx context.Context) error {
 	s.log.GetLogger(ctx).Info("Loading extensions...")
 
-	for _, extension := range s.siteConfig.Extensions() {
-		if err := s.loadExtension(ctx, extension); err != nil {
+	for index, extension := range s.siteConfig.Extensions() {
+		if err := s.loadExtension(ctx, index, extension); err != nil {
 			return fmt.Errorf("%w: %s: %w", ErrLoadExtension, extension.Name(), err)
 		}
 	}
@@ -30,7 +30,11 @@ func (s *Impl) loadExtensions(ctx context.Context) error {
 	return nil
 }
 
-func (s *Impl) loadExtension(ctx context.Context, siteExtensionConfig SiteExtensionConfig) error {
+func (s *Impl) loadExtension(
+	ctx context.Context,
+	extensionIndex int,
+	siteExtensionConfig SiteExtensionConfig,
+) error {
 	extensionName := siteExtensionConfig.Name()
 	if extensionName == "" {
 		return ErrNoName
@@ -49,7 +53,7 @@ func (s *Impl) loadExtension(ctx context.Context, siteExtensionConfig SiteExtens
 		return fmt.Errorf("extension '%s': %w", extensionName, err)
 	}
 
-	if err = s.addExtension(extensionName, extensionDir, siteExtensionConfig, extensionConfig); err != nil {
+	if err = s.addExtension(extensionIndex, extensionName, extensionDir, siteExtensionConfig, extensionConfig); err != nil {
 		return fmt.Errorf("can't add extension '%s': %w", extensionName, err)
 	}
 
@@ -85,22 +89,24 @@ func (s *Impl) readExtensionConfig(ctx context.Context, filename string) (Extens
 		return nil, fmt.Errorf("failed to read dir config file '%s': %w", filename, err)
 	}
 
-	var extensionConfigYaml *ExtensionConfigYaml
+	var extensionConfigYaml ExtensionConfigYaml
 
 	if err = yaml.Unmarshal(configContent, &extensionConfigYaml); err != nil {
 		return nil, fmt.Errorf("failed to parse extension config file '%s': %w", filename, err)
 	}
 
-	return extensionConfigYaml, nil
+	return &extensionConfigYaml, nil
 }
 
 func (s *Impl) addExtension(
+	extensionIndex int,
 	extensionName string,
 	extensionDir string,
 	siteExtensionConfig SiteExtensionConfig,
 	extensionConfig ExtensionConfig,
 ) error {
 	s.extensions[extensionName] = NewExtension(
+		extensionIndex,
 		extensionName,
 		extensionDir,
 		siteExtensionConfig,

@@ -20,6 +20,12 @@ func (s *Impl) loadDatabases(ctx context.Context) error {
 
 	log.Info("Loading databases...")
 
+	if exists, err := s.storage.FileExists(ctx, s.databasesDir()); err != nil {
+		return fmt.Errorf("failed to check if databases exists: %w", err)
+	} else if !exists {
+		return nil
+	}
+
 	tree, err := filetree.Tree(ctx, s.storage, s.databasesDir(), 1)
 	if err != nil {
 		return fmt.Errorf("failed to build tree: %w", err)
@@ -67,7 +73,7 @@ func (s *Impl) loadDatabase(ctx context.Context, databaseFilename string) error 
 		return fmt.Errorf("%w: failed to read database file '%s': %w", ErrLoadDatabase, databaseFilename, err)
 	}
 
-	var databaseYaml *DatabaseConfigYaml
+	var databaseYaml DatabaseConfigYaml
 
 	if err = yaml.Unmarshal(databaseContent, &databaseYaml); err != nil {
 		return fmt.Errorf("%w: failed to parse database file '%s': %w", ErrLoadDatabase, databaseFilename, err)
@@ -76,7 +82,7 @@ func (s *Impl) loadDatabase(ctx context.Context, databaseFilename string) error 
 	database := NewDatabase(
 		databaseYaml.Name(),
 		databaseYaml.Data(),
-		databaseYaml,
+		&databaseYaml,
 	)
 
 	s.databases[databaseYaml.Name()] = database

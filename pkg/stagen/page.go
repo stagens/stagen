@@ -88,13 +88,12 @@ type Page interface {
 }
 
 type PageImpl struct {
-	id         string
-	name       string
-	uri        string
-	fileInfo   *PageFileInfo
-	content    []byte
-	dirConfigs []PageConfig
-	config     PageConfig
+	id       string
+	name     string
+	uri      string
+	fileInfo *PageFileInfo
+	content  []byte
+	config   PageConfig
 }
 
 func NewPage(
@@ -103,17 +102,15 @@ func NewPage(
 	uri string,
 	fileInfo *PageFileInfo,
 	content []byte,
-	dirConfigs []PageConfig,
 	config PageConfig,
 ) *PageImpl {
 	return &PageImpl{
-		id:         id,
-		name:       name,
-		uri:        uri,
-		fileInfo:   fileInfo,
-		content:    content,
-		dirConfigs: dirConfigs,
-		config:     config,
+		id:       id,
+		name:     name,
+		uri:      uri,
+		fileInfo: fileInfo,
+		content:  content,
+		config:   config,
 	}
 }
 

@@ -1,0 +1,5 @@
+---
+site:
+  template:
+    theme: default
+    default_layout: _default

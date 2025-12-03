@@ -3,6 +3,7 @@ package wiring
 import (
 	"context"
 
+	"github.com/pixality-inc/golang-core/clock"
 	"github.com/pixality-inc/golang-core/control_flow"
 	"github.com/pixality-inc/golang-core/logger"
 
@@ -15,6 +16,7 @@ type Wiring struct {
 	ControlFlow control_flow.ControlFlow
 	EnvConfig   *config.Config
 	Log         logger.Logger
+	Clock       clock.Clock
 	Git         git.Git
 	Cli         cli.Cli
 }
@@ -46,9 +48,13 @@ func New() *Wiring {
 
 	gitTool := git.New()
 
+	// Clocks
+
+	clocks := clock.New()
+
 	// Cli
 
-	cliTool := cli.New(gitTool)
+	cliTool := cli.New(clocks, gitTool)
 
 	// Wire
 
@@ -56,6 +62,7 @@ func New() *Wiring {
 		ControlFlow: controlFlow,
 		EnvConfig:   envConfig,
 		Log:         log,
+		Clock:       clocks,
 		Git:         gitTool,
 		Cli:         cliTool,
 	}

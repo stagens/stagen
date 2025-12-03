@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/adrg/frontmatter"
 	"gopkg.in/yaml.v3"
@@ -189,7 +188,6 @@ func (s *Impl) createPage(
 		pageUri,
 		pageFileInfo,
 		content,
-		dirConfigs,
 		pageConfig,
 	)
 
@@ -214,7 +212,7 @@ func (s *Impl) getPageFileInfo(pageFilename string) (*PageFileInfo, error) {
 	// if err != nil {
 	// 	return nil, fmt.Errorf("failed to stat page file '%s': %w", pageFilename, err)
 	// }
-	stat := NewFakeTimeSpec(time.Now())
+	stat := NewFakeTimeSpec(s.clock.Now())
 
 	pageFileInfo := NewPageFileInfo(
 		pageFilename,
@@ -240,6 +238,7 @@ func (s *Impl) processPagesDirEntry(
 
 	childDirConfigs := make([]PageConfig, 0, len(dirConfigs)+len(entryDirConfigs))
 
+	childDirConfigs = append(childDirConfigs, dirConfigs...)
 	childDirConfigs = append(childDirConfigs, entryDirConfigs...)
 
 	if err = s.processPagesDirEntries(ctx, dirEntry.Children(), childDirConfigs); err != nil {

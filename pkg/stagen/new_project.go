@@ -23,7 +23,7 @@ type newProjectConfig struct {
 //go:embed assets/stagen_64.png
 var logoPng []byte
 
-func (s *Impl) NewProject(ctx context.Context, name string) error {
+func (s *Impl) NewProject(ctx context.Context, name string, withGit bool) error {
 	log := s.log.GetLogger(ctx)
 
 	log.Infof("Creating new project: %s", name)
@@ -93,7 +93,7 @@ func (s *Impl) NewProject(ctx context.Context, name string) error {
 				UrlValue: "/logo.png",
 			},
 			CopyrightValue: SiteConfigCopyrightYaml{
-				YearValue:   time.Now().Year(),
+				YearValue:   s.clock.Now().Year(),
 				TitleValue:  "Stagen",
 				RightsValue: "All rights reserved.",
 			},
@@ -164,6 +164,8 @@ data:
 
 /build`)
 
+	gitKeep := []byte(``)
+
 	filesToWrite := map[string][]byte{
 		filepath.Join(sourceDir, "config.yaml"): configYaml,
 		filepath.Join(sourceDir, "README.md"):   readmeMd,
@@ -182,6 +184,10 @@ data:
 		filepath.Join(pagesDir, "50x.html"): err50xHtml,
 
 		filepath.Join(databasesDir, "main_menu.yaml"): mainMenuYaml,
+
+		filepath.Join(extDir, ".gitkeep"):       gitKeep,
+		filepath.Join(templatesDir, ".gitkeep"): gitKeep,
+		filepath.Join(themesDir, ".gitkeep"):    gitKeep,
 	}
 
 	for filename, content := range filesToWrite {
@@ -191,12 +197,14 @@ data:
 	}
 
 	if hasGit {
-		if err = s.git.Init(ctx, sourceDir); err != nil {
-			return fmt.Errorf("failed to init git: %w", err)
-		}
+		if withGit {
+			if err = s.git.Init(ctx, sourceDir); err != nil {
+				return fmt.Errorf("failed to init git: %w", err)
+			}
 
-		if err = s.git.SubmoduleAdd(ctx, sourceDir, "https://github.com/Stagens/theme-default.git", "themes/default"); err != nil {
-			return fmt.Errorf("failed to add themes/default git submodule: %w", err)
+			if err = s.git.SubmoduleAdd(ctx, sourceDir, "https://github.com/Stagens/theme-default.git", "themes/default"); err != nil {
+				return fmt.Errorf("failed to add themes/default git submodule: %w", err)
+			}
 		}
 	} else {
 		log.Errorf("Git is not installed")

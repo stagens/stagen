@@ -1,0 +1,31 @@
+---
+site:
+  name: My Website
+  base_url: https://example.com
+  author:
+    name: Denis
+    email: denis@example.com
+    website: https://denis.example.com
+  copyright:
+    year: 2025
+    title: Den4k
+    rights: All rights reserved!
+  logo:
+    url: https://example.com/logo.png
+  template:
+    theme: default
+    default_layout: _default
+    variables:
+      var1: Config var1 value
+      var2: Config var2 value
+      var3: Config var3 value
+      var4: Config var4 value
+      var5: Config var5 value
+      var6: Config var6 value
+      var7: Config var7 value
+      var8: Config var8 value
+      var9: Config var9 value
+      var10: Config var10 value
+  extensions:
+    - name: ext1
+    - name: ext2

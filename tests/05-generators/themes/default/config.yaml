@@ -1,0 +1,12 @@
+---
+agg_dicts:
+  - name: colors
+    keys: [colors]
+generators:
+  - name: theme
+    source:
+      type: data
+    template:
+      name: theme_gen
+    data:
+      - id: theme_data_1

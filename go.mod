@@ -11,6 +11,7 @@ require (
 	github.com/pixality-inc/golang-core v0.4.2
 	github.com/quailyquaily/goldmark-enclave v0.2.2
 	github.com/spf13/cobra v1.10.1
+	github.com/stretchr/testify v1.11.1
 	github.com/valyala/fasthttp v1.68.0
 	github.com/yuin/goldmark v1.7.13
 	golang.org/x/net v0.47.0
@@ -20,6 +21,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fasthttp/router v1.5.4 // indirect
 	github.com/ferluci/fast-realip v1.0.1 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
@@ -38,6 +40,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/paulmach/orb v0.12.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect

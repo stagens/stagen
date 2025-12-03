@@ -36,7 +36,7 @@ func runCommand(rootCtx context.Context, cliTool cli.Cli) {
 				workDir := args[0]
 				name := cmd.Flag("name").Value.String()
 
-				if err := cliTool.Init(cmd.Context(), workDir, name); err != nil {
+				if err := cliTool.Init(cmd.Context(), workDir, name, true); err != nil {
 					log.WithError(err).Fatal()
 				}
 			},

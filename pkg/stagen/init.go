@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"stagen/internal/build"
 )
@@ -59,7 +58,7 @@ func (s *Impl) init(ctx context.Context) error {
 		return fmt.Errorf("failed to create build dir: %w", err)
 	}
 
-	s.buildTime = time.Now()
+	s.buildTime = s.clock.Now()
 
 	if err := s.loadExtensions(ctx); err != nil {
 		return fmt.Errorf("%w: error loading extensions: %w", ErrInit, err)

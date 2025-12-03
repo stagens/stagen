@@ -1,0 +1,13 @@
+---
+agg_dicts:
+  - name: color
+    keys: [color]
+generators:
+  - name: ext1
+    source:
+      type: data
+    template:
+      name: ext1_gen
+    data:
+      - id: ext1_data_1
+      - id: ext1_data_2

@@ -8,8 +8,8 @@ import (
 	"io"
 	"path/filepath"
 	"text/template"
-	"time"
 
+	"github.com/pixality-inc/golang-core/clock"
 	"github.com/pixality-inc/golang-core/storage"
 )
 
@@ -68,6 +68,7 @@ type Generator interface {
 type GeneratorImpl struct {
 	config             SiteGeneratorConfig
 	source             GeneratorSource
+	clock              clock.Clock
 	storage            storage.Storage
 	templateDirs       []string
 	createPageFunction CreatePageFunction
@@ -76,6 +77,7 @@ type GeneratorImpl struct {
 func NewGenerator(
 	config SiteGeneratorConfig,
 	source GeneratorSource,
+	clocks clock.Clock,
 	storage storage.Storage,
 	templateDirs []string,
 	createPageFunction CreatePageFunction,
@@ -83,6 +85,7 @@ func NewGenerator(
 	return &GeneratorImpl{
 		config:             config,
 		source:             source,
+		clock:              clocks,
 		storage:            storage,
 		templateDirs:       templateDirs,
 		createPageFunction: createPageFunction,
@@ -147,7 +150,7 @@ func (g *GeneratorImpl) Generate(ctx context.Context) ([]Page, error) {
 		return nil, ErrGeneratorTemplateNotFound
 	}
 
-	timeSpec := NewFakeTimeSpec(time.Now())
+	timeSpec := NewFakeTimeSpec(g.clock.Now())
 
 	templatePageFileInfo := NewPageFileInfo(
 		templatePath,

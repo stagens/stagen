@@ -1,0 +1,13 @@
+# mod_rewrite
+RewriteEngine On
+
+# check for file.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+)$ $1.html [L]
+
+# error pages
+ErrorDocument 404 /404.html
+ErrorDocument 500 /50x.html
+ErrorDocument 502 /50x.html
+ErrorDocument 503 /50x.html

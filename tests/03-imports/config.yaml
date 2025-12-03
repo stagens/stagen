@@ -1,0 +1,10 @@
+---
+site:
+  template:
+    theme: default
+    default_layout: _default
+    imports:
+      imports:
+        - name: example
+  extensions:
+    - name: ext1

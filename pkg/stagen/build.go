@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
-	"time"
+	"sort"
 
 	"github.com/pixality-inc/golang-core/timetrack"
 	"github.com/pixality-inc/golang-core/util"
@@ -60,7 +60,17 @@ func (s *Impl) getBasePageConfig() PageConfig {
 		templateConfig.Extras(),
 	)
 
+	extensions := make([]Extension, 0, len(s.extensions))
+
 	for _, extension := range s.extensions {
+		extensions = append(extensions, extension)
+	}
+
+	sort.Slice(extensions, func(i, j int) bool {
+		return extensions[i].Index() < extensions[j].Index()
+	})
+
+	for _, extension := range extensions {
 		pageConfig = MergePageConfigs(pageConfig, extension.Config().ToPageConfig())
 	}
 
@@ -234,7 +244,7 @@ func (s *Impl) getTemplateData(
 		"Page": pageEntryData,
 		"System": map[string]any{
 			"BuildTime": s.buildTime,
-			"Now":       time.Now(),
+			"Now":       s.clock.Now(),
 		},
 		"Pages":        pagesData,
 		"Databases":    s.databases,

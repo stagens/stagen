@@ -1,0 +1,13 @@
+{{- define "macro:Ext1" }}
+  {{- $a := .a }}
+  {{- $content := .content }}
+  <div id="{{ $a }}">{{ $content }}</div>
+{{ end -}}
+{{- define "macro:Ext2" }}
+  {{- $a := .a }}
+  <div id="{{ $a }}">It's without content, just with "a" param</div>
+{{ end -}}
+{{define "macro:Ext3"}}
+  {{- $a := .a }}
+  <div id="{{ $a }}">It's without content, just with "a" param</div>
+{{end}}

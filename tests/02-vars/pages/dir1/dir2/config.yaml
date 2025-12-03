@@ -1,0 +1,5 @@
+---
+variables:
+  var1: Dir1/Dir2 var1 value
+  var8: Dir1/Dir2 var8 value
+  var9: Dir1/Dir2 var9 value

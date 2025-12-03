@@ -1,0 +1,40 @@
+logger:
+    level: info
+    format: text
+    timestamp: true
+    colors: true
+    stacktrace: false
+    stacktrace_errors: false
+stagen:
+    env: dev
+    http:
+        host: 127.0.0.1
+        port: 8001
+        shutdown_timeout: 10s
+    settings:
+        use_uri_html_file_extension: false
+site:
+    base_url: http://127.0.0.1:8001
+    name: My Cool Website
+    description: ""
+    lang: en
+    author:
+        name: ""
+        email: ""
+        website: ""
+    logo:
+        url: /logo.png
+    copyright:
+        year: 2025
+        title: Stagen
+        rights: All rights reserved.
+    extensions: []
+    agg_dicts: []
+    generators: []
+    template:
+        theme: default
+        default_layout: ""
+        variables: {}
+        imports: {}
+        includes: {}
+        extras: {}

@@ -1,4 +1,6 @@
 .idea
 
 /example/build
+/tests/*/build
+
 /stagen

@@ -1,0 +1,11 @@
+<h1>{{ .AggDictKey }} :: {{ .AggDictValue }}</h1>
+<ul>
+{{- $color := index $.AggDictsData.colors.colors .AggDictValue }}
+  {{- range $color }}
+    {{- $pageId := .Id }}
+    {{- $page := index $.Pages $pageId }}
+    <li>
+      <a href="{{ $page.Uri }}">{{ $page.Title }}</a>
+    </li>
+  {{ end -}}
+</ul>

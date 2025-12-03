@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/pixality-inc/golang-core/clock"
 	"github.com/pixality-inc/golang-core/logger"
 	"github.com/pixality-inc/golang-core/storage"
 	"github.com/pixality-inc/golang-core/storage/providers"
@@ -16,7 +17,7 @@ import (
 )
 
 type Cli interface {
-	Init(ctx context.Context, workDir string, name string) error
+	Init(ctx context.Context, workDir string, name string, withGit bool) error
 	Build(ctx context.Context, workDir string) error
 	Watch(ctx context.Context, workDir string) error
 	Web(ctx context.Context, workDir string) error
@@ -24,18 +25,20 @@ type Cli interface {
 }
 
 type Impl struct {
-	log logger.Loggable
-	git git.Git
+	log   logger.Loggable
+	clock clock.Clock
+	git   git.Git
 }
 
-func New(gitTool git.Git) *Impl {
+func New(clocks clock.Clock, gitTool git.Git) *Impl {
 	return &Impl{
-		log: logger.NewLoggableImplWithService("cli"),
-		git: gitTool,
+		log:   logger.NewLoggableImplWithService("cli"),
+		clock: clocks,
+		git:   gitTool,
 	}
 }
 
-func (c *Impl) Init(ctx context.Context, workDir string, name string) error {
+func (c *Impl) Init(ctx context.Context, workDir string, name string, withGit bool) error {
 	defaultConfig := config.NewConfig()
 
 	stagenTool, err := c.init(ctx, workDir, defaultConfig)
@@ -43,7 +46,7 @@ func (c *Impl) Init(ctx context.Context, workDir string, name string) error {
 		return err
 	}
 
-	if err = stagenTool.NewProject(ctx, name); err != nil {
+	if err = stagenTool.NewProject(ctx, name, withGit); err != nil {
 		return err
 	}
 
@@ -137,7 +140,7 @@ func (c *Impl) init(_ context.Context, workDir string, cfg *config.Config) (stag
 		providers.NoUrlProviderImpl,
 	)
 
-	stagenTool := stagen.New(&cfg.Stagen, &cfg.Site, c.git, localStorage, workDir)
+	stagenTool := stagen.New(&cfg.Stagen, &cfg.Site, c.clock, c.git, localStorage, workDir)
 
 	return stagenTool, nil
 }

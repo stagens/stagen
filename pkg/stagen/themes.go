@@ -75,13 +75,13 @@ func (s *Impl) readThemeConfig(ctx context.Context, filename string) (ThemeConfi
 		return nil, fmt.Errorf("failed to read dir config file %s: %w", filename, err)
 	}
 
-	var themeConfigYaml *ThemeConfigYaml
+	var themeConfigYaml ThemeConfigYaml
 
 	if err = yaml.Unmarshal(configContent, &themeConfigYaml); err != nil {
 		return nil, fmt.Errorf("failed to parse theme config file %s: %w", filename, err)
 	}
 
-	return themeConfigYaml, nil
+	return &themeConfigYaml, nil
 }
 
 func (s *Impl) addTheme(

@@ -2,6 +2,7 @@ package stagen
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/pixality-inc/golang-core/http"
 	"github.com/pixality-inc/golang-core/json"
@@ -353,23 +354,23 @@ func MergePageConfigs(cfg1 PageConfig, cfg2 PageConfig) PageConfig {
 		isSystem = true
 	}
 
-	variables := cfg1.Variables()
+	variables := cloneMap(cfg1.Variables())
 	for k, v := range cfg2.Variables() {
 		//nolint:modernize // @todo
 		variables[k] = v
 	}
 
-	imports := cfg1.Imports()
+	imports := cloneMap(cfg1.Imports())
 	for k, v := range cfg2.Imports() {
 		imports[k] = append(imports[k], v...)
 	}
 
-	includes := cfg1.Includes()
+	includes := cloneMap(cfg1.Includes())
 	for k, v := range cfg2.Includes() {
 		includes[k] = append(includes[k], v...)
 	}
 
-	extras := cfg1.Extras()
+	extras := cloneMap(cfg1.Extras())
 	for k, v := range cfg2.Extras() {
 		extras[k] = append(extras[k], v...)
 	}
@@ -387,4 +388,11 @@ func MergePageConfigs(cfg1 PageConfig, cfg2 PageConfig) PageConfig {
 		includes,
 		extras,
 	)
+}
+
+func cloneMap[K comparable, V any](theMap map[K]V) map[K]V {
+	result := make(map[K]V, len(theMap))
+	maps.Copy(result, theMap)
+
+	return result
 }

@@ -108,6 +108,7 @@ func (s *Impl) loadGenerator(ctx context.Context, generatorConfig SiteGeneratorC
 	s.generators[generatorName] = NewGenerator(
 		generatorConfig,
 		generatorSource,
+		s.clock,
 		s.storage,
 		templateDirs,
 		s.createPage,

@@ -1,0 +1,6 @@
+---
+name: colors
+data:
+  - id: red
+  - id: green
+  - id: blue

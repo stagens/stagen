@@ -1,0 +1,24 @@
+---
+site:
+  template:
+    theme: default
+    default_layout: _default
+  extensions:
+    - name: ext1
+  generators:
+    - name: colors
+      source:
+        type: database
+        name: colors
+      template:
+        name: color_gen
+      output:
+        dir: colors
+    - name: colors_agg
+      source:
+        type: agg_dict
+        name: colors
+      template:
+        name: color_agg_gen
+      output:
+        dir: colors_agg

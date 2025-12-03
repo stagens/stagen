@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pixality-inc/golang-core/clock"
 	"github.com/pixality-inc/golang-core/logger"
 	"github.com/pixality-inc/golang-core/storage"
 
@@ -40,7 +41,7 @@ var (
 )
 
 type Stagen interface {
-	NewProject(ctx context.Context, name string) error
+	NewProject(ctx context.Context, name string, withGit bool) error
 	Build(ctx context.Context) error
 	Watch(ctx context.Context) error
 	Web(ctx context.Context) error
@@ -50,6 +51,7 @@ type Impl struct {
 	log          logger.Loggable
 	config       Config
 	siteConfig   SiteConfig
+	clock        clock.Clock
 	git          git.Git
 	storage      storage.Storage
 	workDir      string
@@ -71,6 +73,7 @@ type Impl struct {
 func New(
 	cfg Config,
 	siteConfig SiteConfig,
+	clock clock.Clock,
 	gitTool git.Git,
 	storage storage.Storage,
 	realWorkDir string,
@@ -79,11 +82,12 @@ func New(
 		log:          logger.NewLoggableImplWithService("stagen"),
 		config:       cfg,
 		siteConfig:   siteConfig,
+		clock:        clock,
 		git:          gitTool,
 		storage:      storage,
 		workDir:      "",
 		realWorkDir:  realWorkDir,
-		buildTime:    time.Now(),
+		buildTime:    clock.Now(),
 		initialized:  false,
 		extensions:   make(map[string]Extension),
 		databases:    make(map[string]Database),
