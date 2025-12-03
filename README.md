@@ -1,5 +1,13 @@
 # Yet Another Static Website Generator
 
+- [Example Project](https://github.com/stagens/example)
+- [List of themes, extensions and plugins](https://github.com/stagens/awesome)
+
+- [Installation](#installation)
+- [Build from sources](#build-from-sources)
+- [Examples](#examples)
+- [Docs](#docs)
+
 ## Installation
 
 ### Requirements

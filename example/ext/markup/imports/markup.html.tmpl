@@ -1,5 +1,0 @@
-{{- define "macro:Grid" }}
-  {{ $cols := 0 }}
-  {{- if .cols }}{{ $cols = .cols }}{{ end -}}
-  <div class="grid cols-{{ $cols }}">{{ .content }}</div>
-{{ end -}}
