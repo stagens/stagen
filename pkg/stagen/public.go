@@ -9,7 +9,7 @@ import (
 	"github.com/pixality-inc/golang-core/storage"
 	"github.com/pixality-inc/golang-core/util"
 
-	"stagen/pkg/filetree"
+	"github.com/stagens/stagen/pkg/filetree"
 )
 
 func (s *Impl) publicDir() string {

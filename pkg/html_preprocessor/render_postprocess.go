@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"stagen/pkg/html_tokenizer"
+	"github.com/stagens/stagen/pkg/html_tokenizer"
 )
 
 func (p *Impl) renderPostprocessTokens(tokens []html_tokenizer.Token) ([]byte, error) {

@@ -11,9 +11,9 @@ import (
 	"github.com/pixality-inc/golang-core/storage"
 	"github.com/pixality-inc/golang-core/storage/providers"
 
-	"stagen/internal/config"
-	"stagen/pkg/git"
-	"stagen/pkg/stagen"
+	"github.com/stagens/stagen/internal/config"
+	"github.com/stagens/stagen/pkg/git"
+	"github.com/stagens/stagen/pkg/stagen"
 )
 
 type Cli interface {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"stagen/pkg/html_tokenizer"
+	"github.com/stagens/stagen/pkg/html_tokenizer"
 )
 
 var ErrUnknownTokenType = errors.New("unknown token type")

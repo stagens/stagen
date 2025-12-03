@@ -4,7 +4,7 @@ import (
 	"github.com/pixality-inc/golang-core/http"
 	"github.com/pixality-inc/golang-core/json"
 
-	"stagen/pkg/util"
+	"github.com/stagens/stagen/pkg/util"
 )
 
 type SiteConfigAuthorYaml struct {

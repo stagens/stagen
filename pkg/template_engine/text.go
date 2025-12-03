@@ -4,7 +4,7 @@ import (
 	"text/template"
 	"text/template/parse"
 
-	"stagen/pkg/util"
+	"github.com/stagens/stagen/pkg/util"
 )
 
 type TextTemplate struct {

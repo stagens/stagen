@@ -9,10 +9,10 @@ import (
 	"github.com/pixality-inc/golang-core/json"
 	"github.com/pixality-inc/golang-core/storage"
 
-	"stagen/pkg/html_preprocessor"
-	"stagen/pkg/html_tokenizer"
-	"stagen/pkg/markdown"
-	"stagen/pkg/template_engine"
+	"github.com/stagens/stagen/pkg/html_preprocessor"
+	"github.com/stagens/stagen/pkg/html_tokenizer"
+	"github.com/stagens/stagen/pkg/markdown"
+	"github.com/stagens/stagen/pkg/template_engine"
 )
 
 type Theme interface {

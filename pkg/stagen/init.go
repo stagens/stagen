@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"stagen/internal/build"
+	"github.com/stagens/stagen/internal/build"
 )
 
 func (s *Impl) versionInfo() string {

@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"text/template/parse"
 
-	"stagen/pkg/util"
+	"github.com/stagens/stagen/pkg/util"
 )
 
 type HtmlTemplate struct {

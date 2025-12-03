@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 
-	"stagen/pkg/html_tokenizer"
+	"github.com/stagens/stagen/pkg/html_tokenizer"
 )
 
 var AttributesWithoutValue = []string{"checked", "required", "crossorigin"}

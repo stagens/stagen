@@ -6,9 +6,9 @@ import (
 	"github.com/pixality-inc/golang-core/logger"
 	"github.com/spf13/cobra"
 
-	"stagen/internal/cli"
-	"stagen/internal/config"
-	"stagen/internal/wiring"
+	"github.com/stagens/stagen/internal/cli"
+	"github.com/stagens/stagen/internal/config"
+	"github.com/stagens/stagen/internal/wiring"
 )
 
 func runCommand(rootCtx context.Context, cliTool cli.Cli) {

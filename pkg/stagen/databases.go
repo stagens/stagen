@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"stagen/pkg/filetree"
+	"github.com/stagens/stagen/pkg/filetree"
 )
 
 func (s *Impl) databasesDir() string {

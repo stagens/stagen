@@ -1,4 +1,4 @@
-module stagen
+module github.com/stagens/stagen
 
 go 1.25.1
 

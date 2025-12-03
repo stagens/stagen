@@ -12,7 +12,7 @@ import (
 	"github.com/pixality-inc/golang-core/logger"
 	"github.com/pixality-inc/golang-core/storage"
 
-	"stagen/pkg/git"
+	"github.com/stagens/stagen/pkg/git"
 )
 
 const Version = "0.2.0"

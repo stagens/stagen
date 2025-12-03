@@ -11,7 +11,7 @@ import (
 	"github.com/adrg/frontmatter"
 	"gopkg.in/yaml.v3"
 
-	"stagen/pkg/filetree"
+	"github.com/stagens/stagen/pkg/filetree"
 )
 
 const (

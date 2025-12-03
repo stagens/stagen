@@ -13,8 +13,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"stagen/internal/config"
-	"stagen/pkg/git"
+	"github.com/stagens/stagen/internal/config"
+	"github.com/stagens/stagen/pkg/git"
 )
 
 type fakeClock struct {

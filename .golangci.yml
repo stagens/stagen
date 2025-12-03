@@ -116,7 +116,7 @@ formatters:
       simplify: true
     gofumpt:
       extra-rules: false
-      module-path: stagen
+      module-path: "github.com/stagens/stagen"
   exclusions:
     generated: lax
     paths:

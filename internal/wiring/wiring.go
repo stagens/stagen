@@ -7,9 +7,9 @@ import (
 	"github.com/pixality-inc/golang-core/control_flow"
 	"github.com/pixality-inc/golang-core/logger"
 
-	"stagen/internal/cli"
-	"stagen/internal/config"
-	"stagen/pkg/git"
+	"github.com/stagens/stagen/internal/cli"
+	"github.com/stagens/stagen/internal/config"
+	"github.com/stagens/stagen/pkg/git"
 )
 
 type Wiring struct {

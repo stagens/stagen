@@ -9,7 +9,7 @@ import (
 	"github.com/pixality-inc/golang-core/http"
 	"github.com/pixality-inc/golang-core/logger"
 
-	"stagen/pkg/stagen"
+	"github.com/stagens/stagen/pkg/stagen"
 )
 
 type Config struct {
