@@ -1,4 +1,4 @@
-VERSION := 1.0.2
+VERSION := 1.0.3
 IMAGE := vidog/stagen
 
 GIT_TAG         := $(shell git describe --tags --dirty --always 2>/dev/null || echo "dev")

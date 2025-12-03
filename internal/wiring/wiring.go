@@ -46,7 +46,7 @@ func New() *Wiring {
 
 	// Git
 
-	gitTool := git.New()
+	gitTool := git.New("git")
 
 	// Clocks
 

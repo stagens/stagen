@@ -30,6 +30,7 @@ WORKDIR /app
 
 RUN apk add --no-cache wget
 RUN apk add --no-cache tar
+RUN apk add --no-cache git
 RUN wget https://github.com/CloudCannon/pagefind/releases/download/v1.3.0/pagefind-v1.3.0-x86_64-unknown-linux-musl.tar.gz
 RUN tar -xf pagefind-v1.3.0-x86_64-unknown-linux-musl.tar.gz
 

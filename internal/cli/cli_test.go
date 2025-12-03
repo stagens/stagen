@@ -50,7 +50,7 @@ func TestInit(t *testing.T) {
 
 	clocks := newFakeClock(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC))
 
-	gitTool := git.New()
+	gitTool := git.New("git")
 
 	cliTool := New(clocks, gitTool)
 
@@ -137,7 +137,7 @@ func TestBuild(t *testing.T) {
 				}
 			})
 
-			gitTool := git.New()
+			gitTool := git.New("git")
 
 			cliTool := New(clocks, gitTool)
 

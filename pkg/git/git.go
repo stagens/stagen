@@ -20,12 +20,12 @@ type Impl struct {
 	cli cli.Cli
 }
 
-func New() *Impl {
+func New(toolPath string) *Impl {
 	log := logger.NewLoggableImplWithService("git")
 
 	return &Impl{
 		log: log,
-		cli: cli.New(log, "git"),
+		cli: cli.New(log, toolPath),
 	}
 }
 
