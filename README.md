@@ -11,7 +11,7 @@
 - docker (for using pre-built docker image)
 
 ```shell
-$ go install gitlab.com/stagen/stagen-v2/cmd/stagen@latest
+$ go install github.com/stagens/stagen/cmd/stagen@latest
 ```
 
 ## Examples
